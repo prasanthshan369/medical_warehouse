@@ -1,4 +1,4 @@
-import axiosInstance from './axiosInstance';
+import axiosInstance from './client';
 import { API_ENDPOINTS } from '../utils/urls';
 import { ORDERS, PACKED_ORDERS } from '../constants/data';
 import { Order, ApiOrder, ApiPickerQueueResponse } from './types';

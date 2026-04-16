@@ -10,7 +10,7 @@ import {
     Pressable,
     Platform,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@/src/constants/colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
@@ -145,7 +145,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                                 <Text className="text-[14px] font-semibold ml-1 uppercase tracking-wider" style={{ color: colors.textSecondary }}>Phone Number</Text>
                                 <View className="flex-row items-center bg-[#F9F9F9] rounded-[16px] border border-[#EEEEEE] px-3 h-14">
                                     <View className="w-9 h-9 rounded-[10px] items-center justify-center mr-3" style={{ backgroundColor: '#E8F4EC' }}>
-                                        <Feather name="phone" size={18} color={colors.primary} />
+                                        <MaterialCommunityIcons name="phone" size={18} color={colors.primary} />
                                     </View>
                                     <TextInput
                                         className="flex-1 text-[16px] font-medium text-[#222222]"

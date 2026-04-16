@@ -100,11 +100,11 @@ const FloatingTabBar = ({ state, navigation }: BottomTabBarProps) => {
         })
         .onEnd(() => {
             const finalIndex = Math.min(state.routes.length - 1, Math.max(0, Math.round(leaderX.value)));
-            
+
             // Snap correctly at end
             leaderX.value = withSpring(finalIndex, LIQUID_SPRING_CONFIG);
             followerX.value = withSpring(finalIndex, FOLLOWER_SPRING_CONFIG);
-            
+
             runOnJS(navigateToTab)(finalIndex, true);
         })
         .onFinalize(() => {
@@ -151,7 +151,7 @@ const FloatingTabBar = ({ state, navigation }: BottomTabBarProps) => {
 
     return (
         <View
-            className="absolute bottom-6 left-0 right-0 items-center px-6"
+            className="absolute bottom-4 left-0 right-0 items-center px-6"
             style={{ paddingBottom: insets.bottom > 0 ? 0 : 10 }}
         >
             <GestureDetector gesture={combinedGesture}>

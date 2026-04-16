@@ -15,6 +15,9 @@ import { useEffect } from "react";
 import { useAuthStore } from "@/src/store/useAuthStore";
 
 import NotificationManager from "@/src/components/common/NotificationManager";
+import NetworkToast from "@/src/components/common/NetworkToast";
+import { initNetworkListener } from "@/src/utils/network";
+import axiosInstance from "@/src/api/client";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -31,6 +34,13 @@ export default function RootLayout() {
 
   useEffect(() => {
     initialize();
+    
+    // Initialize network listener
+    const unsubscribe = initNetworkListener(axiosInstance);
+    
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -48,6 +58,7 @@ export default function RootLayout() {
       <StatusBar style="dark" />
       <NotificationManager />
       <Stack screenOptions={{ headerShown: false }} />
+      <NetworkToast />
     </GestureHandlerRootView>
   );
 }

@@ -1,8 +1,6 @@
-export const LIVE = true;
-const EXPO_URL = 'http://10.191.26.170:8000'
-export const SITE_URL = LIVE ? 'https://care-sure-api-gateway.onrender.com' : 'http://localhost:3000';
-export const API_BASE_URL = LIVE ? 'https://care-sure-api-gateway.onrender.com' : `${EXPO_URL}`;
-export const IMAGE_BASE_URL = LIVE ? 'https://care-sure-api-gateway.onrender.com' : `${EXPO_URL}`;
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://care-sure-api-gateway.onrender.com';
+export const SITE_URL = API_BASE_URL;
+export const IMAGE_BASE_URL = API_BASE_URL;
 
 
 export const API_ENDPOINTS = {

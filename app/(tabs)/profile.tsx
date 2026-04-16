@@ -73,6 +73,7 @@ const Profile = () => {
             throw error;
         }
     };
+    
 
     const handleLogout = () => {
         Alert.alert(
@@ -193,7 +194,7 @@ const Profile = () => {
                         </TouchableOpacity>
                     </View>
                     <Text className="text-[22px] font-inter-extrabold mt-4" style={{ color: colors.textMain }}>
-                        {userName}
+                        {userName || "Test 1"}
                     </Text>
                     <Text className="text-[14px] font-inter mt-1" style={{ color: colors.textSecondary }}>
                         {empId}
@@ -265,7 +266,7 @@ const Profile = () => {
                         <View
                             className="w-12 h-12 rounded-[16px] items-center justify-center  bg-[#DCF5E8]"
                         >
-                            <Feather name="phone" size={22} color={colors.primary} />
+                            <MaterialCommunityIcons name="phone" size={22} color={colors.primary} />
                         </View>
                         <View className="ml-4 flex-1">
                             <Text className="text-[12px] font-inter-medium" style={{ color: colors.textSecondary }}>

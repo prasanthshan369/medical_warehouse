@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from '../utils/urls';
-import axiosInstance from './axiosInstance';
+import axiosInstance from './client';
 
 export const authService = {
     login: async (data: any) => {

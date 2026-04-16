@@ -13,6 +13,8 @@ interface AuthState {
     refreshAccessToken: () => Promise<string | null>;
 }
 
+let refreshPromise: Promise<string | null> | null = null;
+
 export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
     accessToken: null,
@@ -59,14 +61,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 set({ accessToken, isAuthenticated: true });
 
                 try {
-                    // Verify session on app start
+                    // Verify session on app start. 
+                    // This call will automatically trigger a refresh via axios interceptors if it returns 401.
                     const userResponse = await authService.getMe();
                     if (userResponse.success) {
                         set({ user: userResponse.data });
                     }
                 } catch (e) {
-                    console.warn('Session check failed, attempting silent refresh...');
-                    await get().refreshAccessToken();
+                    // If getMe fails even after axios interceptor refresh, or for other reasons, clear session.
+                    console.warn('Session verification failed on init. User likely logged out or network issue.');
                 }
             }
         } catch (error) {
@@ -76,30 +79,44 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     },
 
     refreshAccessToken: async () => {
-        try {
-            const response = await authService.refreshToken();
-            if (response.success && response.data) {
-                const { accessToken } = response.data;
+        // Simple lock to avoid multiple simultaneous refreshes
+        if (refreshPromise) return refreshPromise;
 
-                await storage.saveToken(accessToken);
-                set({
-                    accessToken,
-                    isAuthenticated: true
-                });
+        refreshPromise = (async () => {
+            try {
+                const response = await authService.refreshToken();
+                if (response.success && response.data) {
+                    const { accessToken } = response.data;
 
-                // Refresh user info from profile API
-                const userResponse = await authService.getMe();
-                if (userResponse.success) {
-                    set({ user: userResponse.data });
+                    await storage.saveToken(accessToken);
+                    set({
+                        accessToken,
+                        isAuthenticated: true
+                    });
+
+                    // Refresh user info from profile API
+                    const userResponse = await authService.getMe();
+                    if (userResponse.success) {
+                        set({ user: userResponse.data });
+                    }
+
+                    return accessToken;
                 }
+            } catch (error: any) {
+                console.error('Token refresh failed:', error);
 
-                return accessToken;
+                // If it's a 401 or specific security error, logout user
+                const isTokenError = error?.status === 401 || error?.message?.includes('Token reuse');
+                if (isTokenError) {
+                    get().logout();
+                }
+            } finally {
+                refreshPromise = null;
             }
-        } catch (error) {
-            console.error('Token refresh failed:', error);
-            get().logout();
-        }
-        return null;
+            return null;
+        })();
+
+        return refreshPromise;
     },
 
     logout: async () => {

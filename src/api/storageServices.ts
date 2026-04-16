@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from '../utils/urls';
-import axiosInstance from './axiosInstance';
+import axiosInstance from './client';
 
 /**
  * Storage API - handles file uploads to S3 or storage server.
