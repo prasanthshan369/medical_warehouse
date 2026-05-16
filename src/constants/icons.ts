@@ -2,6 +2,7 @@ import home from '@/assets/icons/home.svg';
 import packer from '@/assets/icons/packer.svg';
 import picker from '@/assets/icons/picker.svg';
 import profile from '@/assets/icons/profile.svg';
+import dispatch from '@/assets/icons/Dispatch.svg';
 import arrowForward from '@/assets/icons/arrow_forward.svg';
 import keyboardDoubleArrowRight from '@/assets/icons/keyboard_double_arrow_right.svg';
 import hourglassTop from '@/assets/icons/hourglass_top.svg';
@@ -28,12 +29,18 @@ import scan_icon from '@/assets/icons/scan_icon.svg';
 import success from '@/assets/icons/success.svg';
 import scan from '@/assets/icons/scan.svg';
 import checkmarkPure from '@/assets/icons/checkmark_pure.svg';
+import refresh from '@/assets/icons/refresh.svg';
+import arrow_drop_down from '@/assets/icons/arrow_drop_down.svg';
+import calendar_today from '@/assets/icons/calendar_today.svg';
+import local_shipping from '@/assets/icons/local_shipping.svg';
+import cancel from '@/assets/icons/cancel.svg';
 
 export const icons = {
     home,
     picker,    // Use picker.svg for Orders tab
     packer,  // Use packer.svg for Referral tab
     profile,
+    dispatch,
     arrowForward,
     keyboardDoubleArrowRight,
     hourglassTop,
@@ -59,7 +66,12 @@ export const icons = {
     logout,
     scan_icon,
     success,
-    scan
+    scan,
+    refresh,
+    arrow_drop_down,
+    calendar_today,
+    local_shipping,
+    cancel
 } as const;
 
 export type IconKey = keyof typeof icons;

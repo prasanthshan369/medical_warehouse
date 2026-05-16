@@ -9,16 +9,20 @@ import Animated, {
     Easing,
 } from 'react-native-reanimated';
 
+import { Order } from '@/src/types/order.types';
+
 interface OrderInfoPopupProps {
     isVisible: boolean;
     onClose: () => void;
     topOffset?: number;
+    order: Order | null;
 }
 
 const OrderInfoPopup: React.FC<OrderInfoPopupProps> = ({
     isVisible,
     onClose,
     topOffset = 120,
+    order,
 }) => {
     const Person = icons.person;
     const Package = icons.package;
@@ -96,9 +100,9 @@ const OrderInfoPopup: React.FC<OrderInfoPopupProps> = ({
 
             {/* Panel slides down from topOffset into view */}
             <Animated.View style={[styles.panel, panelStyle]}>
-                <DetailRow icon={Person} label="Name" value="Eleanor Fitzpatrick" />
-                <DetailRow icon={Package} label="Order ID" value="#RX-7721" />
-                <DetailRow icon={CalendarClock} label="Order Date" value="Oct 12, 09:30 AM" />
+                <DetailRow icon={Person} label="Name" value={order?.customerName || 'N/A'} />
+                <DetailRow icon={Package} label="Order ID" value={order?.orderId || 'N/A'} />
+                <DetailRow icon={CalendarClock} label="Order Date" value={order?.orderDate || 'N/A'} />
                 <DetailRow icon={CalendarClock} label="Delivery Date" value="Oct 14, 2023" />
             </Animated.View>
         </View>

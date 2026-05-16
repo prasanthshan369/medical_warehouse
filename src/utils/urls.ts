@@ -1,6 +1,7 @@
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://care-sure-api-gateway.onrender.com';
 export const SITE_URL = API_BASE_URL;
 export const IMAGE_BASE_URL = API_BASE_URL;
+export const API_TIMEOUT = 15000;
 
 
 export const API_ENDPOINTS = {
@@ -13,6 +14,7 @@ export const API_ENDPOINTS = {
     AUTH_UPDATE_PROFILE: '/api/v1/users',
     AUTH_UPLOAD_AVATAR: '/api/v1/storage/upload',
     GET_PICKER_QUEUE: '/api/v1/orders/staff/picker-queue',
+    GET_ORDER_DETAILS: '/api/v1/orders/staff',
 
 }
 

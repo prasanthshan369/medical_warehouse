@@ -6,8 +6,8 @@ import Animated, {
     interpolate
 } from 'react-native-reanimated';
 import { useOrderStore } from '@/src/store/useOrderStore';
-import { OrderStatus } from '@/src/api/types';
-import { colors } from '@/src/constants/colors';
+import { OrderStatus } from '@/src/types/order.types';
+import { colors } from '@/src/theme/colors';
 
 interface PickerTabsProps {
     scrollX: SharedValue<number>;
@@ -44,7 +44,7 @@ const PickerTabs: React.FC<PickerTabsProps> = ({ scrollX, viewportWidth }) => {
     };
 
     return (
-        <View style={{ borderBottomColor: colors.bgMain }} className="flex-row border-b mb-6 relative">
+        <View style={{ borderBottomColor: colors.surface.main }} className="flex-row border-b mb-6 relative">
             {/* Animated Indicator - Smoothly moves with scrollX */}
             <Animated.View
                 style={[
@@ -53,7 +53,7 @@ const PickerTabs: React.FC<PickerTabsProps> = ({ scrollX, viewportWidth }) => {
                         position: 'absolute',
                         bottom: 0,
                         height: 4,
-                        backgroundColor: colors.textMain,
+                        backgroundColor: colors.text.DEFAULT,
                         zIndex: 10,
                     }
                 ]}
@@ -72,13 +72,13 @@ const PickerTabs: React.FC<PickerTabsProps> = ({ scrollX, viewportWidth }) => {
                     >
                         <View className="flex-row items-center">
                             <Text
-                                style={{ color: isActive ? colors.textMain : colors.textSecondary }}
-                                className={`text-[14px] font-inter-semibold`}
+                                style={{ color: isActive ? colors.text.DEFAULT : colors.text.secondary }}
+                                className={`text-[15px] font-inter-semibold`}
                             >
                                 {tab.label}
                             </Text>
                             {showBadge && (
-                                <View style={{ backgroundColor: colors.primary }} className="ml-2 rounded-full px-2 py-0.5">
+                                <View style={{ backgroundColor: colors.brand.primary }} className="ml-2 rounded-full px-2 py-0.5">
                                     <Text className="text-white text-[10px] font-inter">
                                         {getPartialCount()}
                                     </Text>

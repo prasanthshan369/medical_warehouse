@@ -1,142 +1,119 @@
-import { API_BASE_URL } from '@/src/utils/urls';
-import axios from 'axios';
-import { storage } from '../utils/storage';
-import { useNetworkStore } from '../store/useNetworkStore';
-import { requestQueue } from '../utils/requestQueue';
+import { tokenStorage } from '@/src/lib/storage';
+import { API_BASE_URL, API_ENDPOINTS, API_TIMEOUT } from '@/src/utils/urls';
+import axios, { AxiosInstance } from 'axios';
+import { toAppError } from '@/src/api/errors';
 
-const axiosInstance = axios.create({
-    baseURL: API_BASE_URL,
-    timeout: 10000,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    withCredentials: true,
-});
+// In-memory token — mirrors window.__ACCESS_TOKEN__ from web client
+// Synchronous access avoids async race conditions in the request interceptor
+let _accessToken: string | null = null;
 
-// Variables to handle token refresh queuing
+export function setAccessToken(token: string | null) {
+  _accessToken = token;
+}
+
+export function getAccessToken(): string | null {
+  return _accessToken;
+}
+
+let onUnauthorized: (() => void) | null = null;
+export function setUnauthorizedHandler(handler: () => void) {
+  onUnauthorized = handler;
+}
+
 let isRefreshing = false;
-let failedQueue: any[] = [];
+let failedQueue: Array<{ resolve: (v: string) => void; reject: (e: unknown) => void }> = [];
 
-/**
- * Processes the queue of failed requests after a token refresh attempt.
- */
-const processQueue = (error: any, token: string | null = null) => {
-    failedQueue.forEach((prom) => {
-        if (error) {
-            prom.reject(error);
-        } else {
-            prom.resolve(token);
-        }
-    });
-
-    failedQueue = [];
+const processQueue = (error: unknown, token: string | null) => {
+  failedQueue.forEach((p) => (error ? p.reject(error) : p.resolve(token!)));
+  failedQueue = [];
 };
 
-// Request interceptor to attach bearer tokens and check connectivity
-axiosInstance.interceptors.request.use(
-    async (config) => {
-        // Network Awareness: Check connectivity before request
-        const { isConnected } = useNetworkStore.getState();
-        if (isConnected === false) {
-            return Promise.reject({ 
-                message: 'No internet connection', 
-                isOffline: true,
-                config // Pass config for queuing
-            });
+export const apiClient: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: API_TIMEOUT,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json'
+  },
+});
+
+// Synchronous request interceptor — reads from in-memory token (no async)
+apiClient.interceptors.request.use((config) => {
+  if (_accessToken) {
+    config.headers.Authorization = `Bearer ${_accessToken}`;
+  }
+  return config;
+});
+
+// 401 response interceptor — refresh and retry
+apiClient.interceptors.response.use(
+  (res) => res,
+  async (err) => {
+    const original = err.config;
+
+    const isAuthPath =
+      original?.url?.includes('auth/refresh') ||
+      original?.url?.includes('auth/logout');
+
+    if (err.response?.status === 401 && !original?._retry && !isAuthPath) {
+      console.log('[apiClient] 401 detected. Attempting background refresh...');
+
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            original.headers.Authorization = `Bearer ${token}`;
+            return apiClient(original);
+          })
+          .catch((e) => Promise.reject(e));
+      }
+
+      original._retry = true;
+      isRefreshing = true;
+
+      try {
+        const { data } = await axios.post(
+          `${API_BASE_URL}${API_ENDPOINTS.AUTH_REFRESH}`,
+          {},
+          {
+            withCredentials: true
+          }
+        );
+
+        const newToken = data.data.accessToken;
+        const expiresIn = data.data.expiresIn;
+
+        console.log('[apiClient] Background refresh SUCCESS');
+
+        // Update in-memory token + persist to SecureStore
+        _accessToken = newToken;
+        await tokenStorage.set(newToken);
+        if (expiresIn) {
+          await tokenStorage.setExpiresAt(Date.now() + expiresIn * 1000);
         }
 
-        const token = await storage.getAccessToken();
-        const url = config.url || '';
-        const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/refresh');
-
-        if (token && !isAuthEndpoint) {
-            config.headers.Authorization = `Bearer ${token}`;
+        processQueue(null, newToken);
+        original.headers.Authorization = `Bearer ${newToken}`;
+        return apiClient(original);
+      } catch (e: any) {
+        console.error('[apiClient] Background refresh FAILED:', e);
+        processQueue(e, null);
+        // Only force logout if the refresh itself returned 401/403 (invalid/expired refresh token)
+        // A 5xx server error should not log the user out
+        const refreshStatus = e?.response?.status;
+        if (!refreshStatus || refreshStatus === 401 || refreshStatus === 403) {
+          _accessToken = null;
+          onUnauthorized?.();
         }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
-
-// Response interceptor: handles refresh logic, timeouts, and offline queue
-axiosInstance.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        // Standardize the error object if it doesn't already have our flags
-        const originalRequest = error.config || error.config;
-
-        // 1. Handle Offline Scenarios (pre-flight check)
-        if (error.isOffline) {
-            return new Promise((resolve, reject) => {
-                requestQueue.add(originalRequest, resolve, reject);
-            });
-        }
-
-        const url = originalRequest?.url || '';
-
-        // 1.5. Handle unexpected network failures (e.g. server down or sudden disconnect)
-        if (!error.response && error.code !== 'ECONNABORTED' && !url.includes('auth/refresh')) {
-            useNetworkStore.getState().setIsConnected(false);
-            return new Promise((resolve, reject) => {
-                requestQueue.add(originalRequest, resolve, reject);
-            });
-        }
-
-        // 2. Handle Timeout Errors
-        if (error.code === 'ECONNABORTED' || error.message?.toLowerCase().includes('timeout')) {
-            return Promise.reject({ 
-                message: 'Request timeout', 
-                isTimeout: true 
-            });
-        }
-
-        const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/refresh');
-
-        // 3. Handle Token Expiration (401 errors) - PRESERVED LOGIC
-        if (error.response?.status === 401 && !isAuthEndpoint && !originalRequest?._retry) {
-            if (isRefreshing) {
-                return new Promise((resolve, reject) => {
-                    failedQueue.push({ resolve, reject });
-                })
-                    .then((token) => {
-                        originalRequest.headers.Authorization = `Bearer ${token}`;
-                        return axiosInstance(originalRequest);
-                    })
-                    .catch((err) => Promise.reject(err));
-            }
-
-            originalRequest._retry = true;
-            isRefreshing = true;
-
-            try {
-                // Dynamically import store to avoid circular dependency
-                const { useAuthStore } = await import('../store/useAuthStore');
-                const store = useAuthStore.getState();
-                const newToken = await store.refreshAccessToken();
-
-                if (newToken) {
-                    processQueue(null, newToken);
-                    originalRequest.headers.Authorization = `Bearer ${newToken}`;
-                    return axiosInstance(originalRequest);
-                } else {
-                    processQueue(new Error('Token refresh failed'), null);
-                    return Promise.reject(error);
-                }
-            } catch (refreshError) {
-                processQueue(refreshError, null);
-                return Promise.reject(refreshError);
-            } finally {
-                isRefreshing = false;
-            }
-        }
-
-        // Standardize general errors
-        return Promise.reject({
-            message: error.response?.data?.message || error.message || 'An unexpected error occurred',
-            isOffline: false,
-            isTimeout: false,
-            status: error.response?.status
-        });
+        return Promise.reject(toAppError(err));
+      } finally {
+        isRefreshing = false;
+      }
     }
+
+    return Promise.reject(toAppError(err));
+  }
 );
 
-export default axiosInstance;
+export default apiClient;

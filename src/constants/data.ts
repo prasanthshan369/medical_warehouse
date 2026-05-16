@@ -1,5 +1,6 @@
 import { icons } from "./icons";
-import { Order, WarehouseStat, OrderItem } from "../api/types";
+import { Order, OrderItem } from "../types/order.types";
+import { WarehouseStat } from "../types/stat.types";
 
 export const APP_TITLE = {
     name: "CareSure",
@@ -31,9 +32,9 @@ export const tabs = [
         icon: icons.packer,
     },
     {
-        name: "profile",
-        title: "Profile",
-        icon: icons.profile,
+        name: "dispatcher",
+        title: "Dispatcher",
+        icon: icons.dispatch,
     },
 ];
 
@@ -46,7 +47,7 @@ export const WAREHOUSE_STATS = [
         label: "Orders",
         itemsPerHr: 245,
         activeHours: 6,
-        medsDelta: 1470,
+        totalItems: 1470,
         gradient: ["#8A84FF", "#7D79DC"] as [string, string],
         illustration: "picks" as const,
     },
@@ -58,9 +59,21 @@ export const WAREHOUSE_STATS = [
         label: "Orders",
         itemsPerHr: 193,
         activeHours: 7,
-        medsDelta: 1210,
+        totalItems: 1210,
         gradient: ["#F0948A", "#E36C61"] as [string, string],
         illustration: "packs" as const,
+    },
+    {
+        id: "dispatch",
+        title: "Sent Out Today",
+        badge: null,
+        value: 210,
+        label: "Orders",
+        itemsPerHr: 82,
+        activeHours: 5,
+        totalItems: 1050,
+        gradient: ["#609470", "#4B7D5B"] as [string, string],
+        illustration: "dispatch" as const,
     },
 ];
 
@@ -209,4 +222,32 @@ export const PACKED_ORDERS: Order[] = [
     { id: "#RX-1634", customerName: "Charlotte Lewis", totalItems: 2, date: "Apr 11, 2026 • 02:45 PM", status: "completed" },
     { id: "#RX-1745", customerName: "Henry Walker", totalItems: 10, date: "Apr 11, 2026 • 03:00 PM", status: "completed" },
     { id: "#RX-1856", customerName: "Amelia Hall", totalItems: 5, date: "Apr 11, 2026 • 03:15 PM", status: "completed" },
+];
+
+export const DISPATCHED_ORDERS = [
+    {
+        id: "#RX-9824",
+        customerName: "Eleanor Fitzpatrick",
+        reviewedOn: "Apr 12, 2026 • 11:15 AM",
+        status: "dispatched"
+    },
+    {
+        id: "#RX-5698",
+        customerName: "Marcus Johnson",
+        reviewedOn: "Apr 12, 2026 • 11:45 AM",
+        status: "dispatched"
+    },
+    {
+        id: "#RX-9824_2",
+        id_display: "#RX-9824",
+        customerName: "Michael Chang",
+        reviewedOn: "Apr 11, 2026 • 05:00 PM",
+        status: "dispatched"
+    },
+    {
+        id: "#RX-4486",
+        customerName: "David Fetcher",
+        reviewedOn: "Apr 13, 2026 • 05:00 PM",
+        status: "dispatched"
+    }
 ];

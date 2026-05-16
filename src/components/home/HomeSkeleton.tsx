@@ -2,12 +2,24 @@ import React from 'react';
 import { View } from 'react-native';
 import Skeleton from '../common/Skeleton';
 
+export const HeaderSkeleton = () => {
+    return (
+        <View className="flex-row items-center justify-between mb-8 mt-6">
+            <View className="gap-y-2">
+                <Skeleton width={180} height={32} borderRadius={8} />
+                <Skeleton width={100} height={16} borderRadius={4} />
+            </View>
+            <Skeleton width={48} height={48} borderRadius={24} />
+        </View>
+    );
+};
+
 const HomeSkeleton = () => {
     return (
         <View className="mb-6">
             <View 
                 style={{ borderRadius: 24, minHeight: 200 }}
-                className="p-7 bg-[#F2F2F2] overflow-hidden"
+                className="p-7 bg-white overflow-hidden border border-[#F0F0F0]"
             >
                 {/* Title shimmer */}
                 <Skeleton width={120} height={24} borderRadius={6} />
@@ -36,6 +48,7 @@ const HomeSkeleton = () => {
 
 export const HomeSkeletonList = () => (
     <View>
+        <HeaderSkeleton />
         <HomeSkeleton />
         <HomeSkeleton />
     </View>

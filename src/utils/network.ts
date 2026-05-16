@@ -8,13 +8,17 @@ import { requestQueue } from './requestQueue';
  */
 export const initNetworkListener = (axiosInstance: any) => {
   return NetInfo.addEventListener((state) => {
-    const wasConnected = useNetworkStore.getState().isConnected !== false;
-    const isConnected = !!state.isConnected && state.isInternetReachable !== false;
+    const isConnected = state.isConnected; // Preserve null if status is unknown
+    const isInternetReachable = state.isInternetReachable;
 
-    useNetworkStore.getState().setIsConnected(isConnected);
+    const wasFullyConnected = useNetworkStore.getState().isConnected === true && 
+                              useNetworkStore.getState().isInternetReachable === true;
 
-    // If we just regained connection automatically, process the queue
-    if (!wasConnected && isConnected) {
+    useNetworkStore.getState().setIsConnected(isConnected, isInternetReachable);
+
+    // If we just regained FULL connection automatically, process the queue
+    const isNowFullyConnected = isConnected === true && isInternetReachable === true;
+    if (!wasFullyConnected && isNowFullyConnected) {
       requestQueue.process(axiosInstance);
     }
   });

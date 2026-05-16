@@ -3,22 +3,32 @@ import { View, Text, TouchableOpacity, Image, ScrollView, RefreshControl, Alert 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/src/store/useAuthStore';
+import { authService } from '@/src/services/auth.service';
 import { icons } from '@/src/constants/icons';
 import { colors } from '@/src/constants/colors';
 import * as Haptics from 'expo-haptics';
 import AppLoader from '@/src/components/common/AppLoader';
-import UploadBottomSheet from '@/src/components/common/UploadBottomSheet';
+import UploadBottomSheet from '@/src/components/profile/UploadBottomSheet';
 import { ActivityIndicator } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useImageUpload } from '@/src/hooks/useImageUpload';
-import EditProfileModal from '@/src/components/common/EditProfileModal';
-import { userApi } from '@/src/api/storageServices';
+import EditProfileModal from '@/src/components/profile/EditProfileModal';
+import { useUserQuery, useUpdateUserMutation } from '@/src/hooks/useUser';
+import { ProfileSkeleton } from '@/src/components/profile/ProfileSkeleton';
+import { useNetworkStore } from '@/src/store/useNetworkStore';
 
 const Profile = () => {
     const router = useRouter();
-    const { logout, user, initialize } = useAuthStore();
+    const {
+        data: user,
+        isLoading: userLoading,
+        isFetching: refreshing,
+        refetch
+    } = useUserQuery();
+
+    const { mutateAsync: updateUser } = useUpdateUserMutation();
+
     const [isLoggingOut, setIsLoggingOut] = useState(false);
-    const [refreshing, setRefreshing] = useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
     // Using the new modular image upload hook
@@ -50,22 +60,18 @@ const Profile = () => {
         : 'April 15, 2021';
 
     const onRefresh = async () => {
-        setRefreshing(true);
         try {
-            await initialize(); // Refresh user data from API
+            await refetch();
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         } catch (e) {
             console.error('Failed to refresh profile:', e);
-        } finally {
-            setRefreshing(false);
-
         }
     };
+
     const handleUpdateProfile = async (data: any) => {
         if (!user?.id) return;
         try {
-            await userApi.update(user.id, data);
-            await initialize();
+            await updateUser({ id: user.id, data });
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         } catch (error) {
             console.error('Update failed:', error);
@@ -73,7 +79,7 @@ const Profile = () => {
             throw error;
         }
     };
-    
+
 
     const handleLogout = () => {
         Alert.alert(
@@ -91,7 +97,7 @@ const Profile = () => {
                         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
                         setIsLoggingOut(true);
                         try {
-                            await logout();
+                            await authService.logout();
                             router.replace('/(auth)/login');
                         } catch (error) {
                             console.error('Logout failed:', error);
@@ -108,6 +114,10 @@ const Profile = () => {
     const DraftIcon = icons.drafts;
     const CalendarIcon = icons.calendar_month;
     const LogoutIcon = icons.logout;
+
+    if (userLoading) {
+        return <ProfileSkeleton />;
+    }
 
     return (
         <SafeAreaView className="flex-1" style={{ backgroundColor: colors.bgMain }}>
@@ -148,8 +158,8 @@ const Profile = () => {
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={onRefresh}
-                        colors={[colors.primary]}   // Android
-                        tintColor={colors.primary}    // iOS
+                        colors={[colors.textMuted]}   // Android
+                        tintColor={colors.textMuted}    // iOS
                     />
                 }
 

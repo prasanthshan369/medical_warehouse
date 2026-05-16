@@ -2,35 +2,37 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { icons } from '@/src/constants/icons';
-import { colors } from '@/src/constants/colors';
-import { Order } from '@/src/api/types';
+import { colors } from '@/src/theme/colors';
+import { Order } from '@/src/types/order.types';
 
 interface PackedOrderCardProps {
     order: Order;
+    isLast?: boolean;
 }
 
-const PackedOrderCard: React.FC<PackedOrderCardProps> = ({ order }) => {
+const PackedOrderCard: React.FC<PackedOrderCardProps> = ({ order, isLast }) => {
     const router = useRouter();
     const PersonIcon = icons.person;
 
     return (
-        <TouchableOpacity 
-            activeOpacity={0.7}
+        <TouchableOpacity
+            activeOpacity={0.6}
             onPress={() => router.push({ pathname: '/completed/[id]', params: { id: order.id } })}
-            className="bg-white rounded-[16px] border border-[#EEEEEE] flex-row items-center p-4 mb-3"
+            className="flex-row items-center px-5 py-6 bg-white my-2  rounded-md"
+            style={!isLast ? { borderBottomWidth: 1, borderBottomColor: '#F0F0F0' } : undefined}
         >
-            <View className="w-12 h-12 rounded-full items-center justify-center bg-[#F2F2F2] mr-4">
-                <PersonIcon width={22} height={22} fill={colors.textSecondary} />
+            <View className="w-[46px] h-[46px] rounded-full items-center justify-center bg-[#F0F0F0] mr-4">
+                <PersonIcon width={22} height={22} fill={colors.text.secondary} />
             </View>
             <View className="flex-1">
-                <Text className="text-[17px] font-inter-semibold" style={{ color: colors.textMain }}>
-                    {order.id}
+                <Text style={{ color: colors.text.DEFAULT }} className="text-[18px] font-inter-bold">
+                    {order.orderId || order.id}
                 </Text>
-                <Text className="text-[14px] font-inter" style={{ color: colors.textSecondary }}>
+                <Text style={{ color: colors.text.secondary }} className="text-[14px] font-inter mt-0.5">
                     {order.customerName}
                 </Text>
             </View>
-            <Text className="text-[14px] font-inter" style={{ color: colors.textMain }}>
+            <Text style={{ color: colors.text.secondary }} className="text-[14px] font-inter">
                 {order.totalItems} Items
             </Text>
         </TouchableOpacity>

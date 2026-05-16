@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { OrderItem } from '@/src/api/types';
+import { OrderItem } from '@/src/types/order.types';
 import { icons } from '@/src/constants/icons';
-import { colors } from '@/src/constants/colors';
+import { colors } from '@/src/theme/colors';
 
 interface CompletedOrderItemCardProps {
     item: OrderItem;
@@ -15,7 +15,7 @@ const CompletedOrderItemCard: React.FC<CompletedOrderItemCardProps> = ({ item })
         <View
             className="flex-row items-center bg-white p-4 rounded-2xl mb-3 border"
             style={{
-                borderColor: colors.borderLight,
+                borderColor: colors.border.light,
             }}
         >
             {/* Medication Icon */}
@@ -27,17 +27,17 @@ const CompletedOrderItemCard: React.FC<CompletedOrderItemCardProps> = ({ item })
 
             {/* Info Section */}
             <View className="flex-1">
-                <Text style={{ color: colors.textMain }} className="font-inter-semibold text-[15px] mb-0.5">
+                <Text style={{ color: colors.text.DEFAULT }} className="font-inter-semibold text-[15px] mb-0.5">
                     {item.name}
                 </Text>
-                <Text style={{ color: colors.textSecondary }} className="text-[14px] font-inter">
+                <Text style={{ color: colors.text.secondary }} className="text-[14px] font-inter">
                     {item.manufacturer}
                 </Text>
             </View>
 
             {/* Quantity Badge */}
             <View className="bg-[#F0F0F0] px-3.5 py-1.5 rounded-full">
-                <Text style={{ color: colors.textMain }} className="font-inter-semibold text-[12px]">
+                <Text style={{ color: colors.text.DEFAULT }} className="font-inter-semibold text-[12px]">
                     {item.requiredQty} Units
                 </Text>
             </View>

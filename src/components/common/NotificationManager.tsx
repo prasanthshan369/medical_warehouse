@@ -1,14 +1,14 @@
-import React from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import React, { memo } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNotificationStore } from '@/src/store/useNotificationStore';
 import NotificationItem from './NotificationItem';
 
-const NotificationManager = () => {
+const NotificationManager = memo(() => {
     const insets = useSafeAreaInsets();
-    const notifications = useNotificationStore((state) => state.notifications);
+    const visible = useNotificationStore((state) => state.visible);
 
-    if (notifications.length === 0) return null;
+    if (visible.length === 0) return null;
 
     return (
         <View 
@@ -18,7 +18,7 @@ const NotificationManager = () => {
                 { paddingTop: insets.top + 10 }
             ]}
         >
-            {notifications.map((notification, index) => (
+            {visible.map((notification, index) => (
                 <NotificationItem 
                     key={notification.id} 
                     notification={notification} 
@@ -27,7 +27,7 @@ const NotificationManager = () => {
             ))}
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     container: {
@@ -35,8 +35,9 @@ const styles = StyleSheet.create({
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 9999, // Ensure it's above absolute components like Modals
+        zIndex: 9999,
     },
 });
 
 export default NotificationManager;
+

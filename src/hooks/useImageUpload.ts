@@ -2,16 +2,17 @@ import { useState, useCallback } from 'react';
 import { Alert, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
-import { authService } from '@/src/api/authServices';
-import { storageApi, userApi } from '@/src/api/storageServices';
+import { userService } from '@/src/services/user.service';
 import { useAuthStore } from '@/src/store/useAuthStore';
+import { useQueryClient } from '@tanstack/react-query';
 
 /**
  * Custom hook to handle profile image picking and uploading.
  * Encapsulates permissions, optimistic UI, haptics, and API integration.
  */
 export const useImageUpload = () => {
-    const { initialize, user } = useAuthStore();
+    const { user } = useAuthStore();
+    const queryClient = useQueryClient();
 
     const [isSheetVisible, setIsSheetVisible] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -34,22 +35,17 @@ export const useImageUpload = () => {
             const filename = uri.split('/').pop() ?? 'avatar.jpg';
             const ext = /\.(\w+)$/.exec(filename)?.[1] ?? 'jpeg';
 
-            const formData = new FormData();
-            // @ts-ignore — RN FormData requires this object shape
-            formData.append('file', { uri, name: filename, type: `image/${ext}` });
-            formData.append('folder', 'administrator/profile');
-
-            // 1. Upload to storage
-            const uploadRes = await storageApi.upload(formData);
+            // 1. Upload to storage via service
+            const uploadRes = await userService.uploadAvatar(uri, filename, `image/${ext}`);
             
-            if (uploadRes.data?.success && uploadRes.data?.data?.url) {
-                const avatarUrl = uploadRes.data.data.url;
+            if (uploadRes.success && uploadRes.data?.url) {
+                const avatarUrl = uploadRes.data.url;
                 
-                // 2. Update user profile with new URL
-                await userApi.update(user.id, { avatarUrl });
+                // 2. Update user profile via service
+                await userService.updateProfile(user.id, { avatarUrl });
 
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                await initialize(); // sync server state locally
+                queryClient.invalidateQueries({ queryKey: ['user'] });
             } else {
                 throw new Error('Upload failed: No URL returned');
             }
@@ -69,7 +65,7 @@ export const useImageUpload = () => {
         } finally {
             setIsUploading(false);
         }
-    }, [initialize]);
+    }, [user?.id, queryClient]);
 
     // ── Camera ────────────────────────────────────────────────────────────────
     const onSelectCamera = useCallback(async () => {

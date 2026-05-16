@@ -7,24 +7,26 @@ import { useHomeStore } from '@/src/store/useHomeStore';
 import { HomeSkeletonList } from './HomeSkeleton';
 import * as Haptics from 'expo-haptics';
 import { useAuthStore } from '@/src/store/useAuthStore';
+import { homeService } from '@/src/services/home.service';
+import { authService } from '@/src/services/auth.service';
+import { useHomeQuery } from '@/src/hooks/useHome';
 
 const HomeView = () => {
     const navigation = useNavigation<any>();
-    const { warehouseStats, statsLoading, statsError, fetchWarehouseStats } = useHomeStore();
-    const { initialize } = useAuthStore();
+    const { warehouseStats, statsError } = useHomeStore();
+    const { user, userLoading } = useAuthStore();
+    const { isLoading: statsLoading, refetch: refetchStats } = useHomeQuery();
     const [refreshing, setRefreshing] = useState(false);
 
-    useEffect(() => {
-        fetchWarehouseStats();
-    }, []);
+    // Initial mount loading state
+    const isInitialLoading = (statsLoading && !warehouseStats?.length) || (userLoading && !user);
 
     const onRefresh = async () => {
         setRefreshing(true);
         try {
-            // Simultaneously refresh stats and user profile
             await Promise.all([
-                fetchWarehouseStats(),
-                initialize()
+                refetchStats(),
+                authService.initialize()
             ]);
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         } catch (e) {
@@ -40,6 +42,8 @@ const HomeView = () => {
             navigation.navigate('picker');
         } else if (id === 'packs') {
             navigation.navigate('packer');
+        } else if (id === 'dispatch') {
+            navigation.navigate('dispatcher');
         }
     };
 
@@ -56,14 +60,13 @@ const HomeView = () => {
                 />
             }
         >
-            {/* Header Section */}
-            <DashboardHeader />
-
-            {/* Loading State for Stats */}
-            {statsLoading && !warehouseStats?.length ? (
+            {isInitialLoading ? (
                 <HomeSkeletonList />
             ) : (
                 <>
+                    {/* Header Section */}
+                    <DashboardHeader />
+
                     {/* Error State for Stats */}
                     {statsError && !warehouseStats?.length && (
                         <View className="mb-4 p-4 bg-red-500/10 rounded-2xl border border-red-500/20">

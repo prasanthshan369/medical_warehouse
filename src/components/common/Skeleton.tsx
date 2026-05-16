@@ -26,8 +26,8 @@ const Skeleton = ({
     height = 20, 
     borderRadius = 4, 
     style,
-    color = '#F2F2F2',
-    highlightColor = 'rgba(255, 255, 255, 0.6)'
+    color = '#EBEBEB',
+    highlightColor = 'rgba(255, 255, 255, 0.8)'
 }: SkeletonProps) => {
     const translateX = useSharedValue(-1);
 

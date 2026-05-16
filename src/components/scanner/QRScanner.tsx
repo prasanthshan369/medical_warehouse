@@ -11,8 +11,9 @@ import {
     Platform,
     Alert,
     ActivityIndicator,
-    KeyboardAvoidingView,
-
+    Keyboard,
+    KeyboardEvent,
+    KeyboardAvoidingView
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -28,7 +29,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const SCAN_SIZE = 260;
+const SCAN_SIZE = 300;
 
 const QRScanner = () => {
     const router = useRouter();
@@ -38,6 +39,7 @@ const QRScanner = () => {
     const [scanned, setScanned] = useState(false);
     const [manualId, setManualId] = useState('');
     const [isRequesting, setIsRequesting] = useState(false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     const translateY = useSharedValue(0);
     const appStateRef = useRef(AppState.currentState);
@@ -65,6 +67,16 @@ const QRScanner = () => {
             appStateRef.current = next;
         });
         return () => sub.remove();
+    }, []);
+
+    useEffect(() => {
+        const show = Keyboard.addListener('keyboardDidShow', (e: KeyboardEvent) => {
+            setKeyboardHeight(e.endCoordinates.height);
+        });
+        const hide = Keyboard.addListener('keyboardDidHide', () => {
+            setKeyboardHeight(0);
+        });
+        return () => { show.remove(); hide.remove(); };
     }, []);
 
     useFocusEffect(
@@ -118,16 +130,19 @@ const QRScanner = () => {
     };
 
     const Header = () => (
-        <View style={{ paddingTop: insets.top + 10 }} className="px-6 pb-2">
-            <Text className="text-white text-[16px] opacity-60 font-medium">scan</Text>
+        <View style={{ paddingTop: insets.top + 10 }} className="px-6 pb-4 flex-row items-center">
+            <TouchableOpacity onPress={() => router.back()} className="mr-4 p-1">
+                <Ionicons name="arrow-back" size={26} color="white" />
+            </TouchableOpacity>
+            <Text className="text-white text-[20px] opacity-60 font-medium">scan</Text>
         </View>
     );
 
     const manualInputEl = (
-        <View style={{ paddingBottom: Math.max(insets.bottom, 20) }} className="px-8">
-            <View className="bg-[#4D4D4D] h-[64px] rounded-[12px] flex-row items-center px-5">
+        <View style={{ paddingBottom: keyboardHeight > 0 ? keyboardHeight + 12 : Math.max(insets.bottom, 20) }} className="px-8">
+            <View className="bg-[#4D4D4D] h-[72px] rounded-[14px] flex-row items-center px-5">
                 <TextInput
-                    className="flex-1 text-white text-[15px]"
+                    className="flex-1 text-white text-[17px]"
                     placeholder="Enter Order ID manually"
                     placeholderTextColor="#8E8E8E"
                     value={manualId}
@@ -158,6 +173,7 @@ const QRScanner = () => {
                     </View>
                     {manualInputEl}
                 </KeyboardAvoidingView>
+
             </View>
         );
     }
@@ -239,11 +255,7 @@ const QRScanner = () => {
     return (
         <View className="flex-1 bg-[#1A1A1A]">
             <StatusBar style="light" translucent />
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                className="flex-1"
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-            >
+            <View className="flex-1">
                 <Header />
 
                 <View className="flex-1 mx-4 mb-4 rounded-[40px] overflow-hidden bg-black">
@@ -281,16 +293,16 @@ const QRScanner = () => {
 
                         <TouchableOpacity
                             onPress={() => router.back()}
-                            className="mt-8 bg-[rgba(18,18,18,0.5)] w-[48px] h-[48px] rounded-[24px] items-center justify-center"
+                            className="mt-10 bg-[rgba(18,18,18,0.5)] w-[58px] h-[58px] rounded-[29px] items-center justify-center"
                             activeOpacity={0.7}
                         >
-                            <Ionicons name="close" size={26} color="white" />
+                            <Ionicons name="close" size={30} color="white" />
                         </TouchableOpacity>
                     </View>
                 </View>
 
                 {manualInputEl}
-            </KeyboardAvoidingView>
+            </View>
         </View>
     );
 };

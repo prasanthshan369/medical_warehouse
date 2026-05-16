@@ -1,7 +1,5 @@
 import { create } from 'zustand';
-import { orderService } from '../api/orderServices';
-import { Order, OrderStatus } from '../api/types';
-import { ORDERS as STATIC_ORDERS } from '../constants/data';
+import { Order, OrderStatus } from '../types/order.types';
 
 interface OrderState {
     orders: Order[];
@@ -9,37 +7,28 @@ interface OrderState {
     ordersError: string | null;
     activeTab: OrderStatus;
 
-    fetchOrders: () => Promise<void>;
+    // Setters
+    setOrders: (orders: Order[]) => void;
+    setLoading: (loading: boolean) => void;
+    setError: (error: string | null) => void;
     setActiveTab: (tab: OrderStatus) => void;
     clearOrders: () => void;
 }
 
 export const useOrderStore = create<OrderState>((set) => ({
-    // Initial Orders State
-    orders: STATIC_ORDERS as Order[],
-    ordersLoading: false,
+    orders: [],
+    ordersLoading: true,
     ordersError: null,
     activeTab: 'new',
 
-    fetchOrders: async () => {
-        set({ ordersLoading: true, ordersError: null });
-        try {
-            const data = await orderService.getOrders();
-            set({ orders: data, ordersLoading: false });
-        } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : 'Failed to fetch orders';
-            set({
-                ordersError: message,
-                ordersLoading: false
-            });
-        }
-    },
-
-    setActiveTab: (tab) => set({ activeTab: tab }),
-
+    setOrders: (orders) => set({ orders }),
+    setLoading: (ordersLoading) => set({ ordersLoading }),
+    setError: (ordersError) => set({ ordersError }),
+    setActiveTab: (activeTab) => set({ activeTab }),
     clearOrders: () => set({
-        orders: STATIC_ORDERS as Order[],
+        orders: [],
         ordersError: null,
-        activeTab: 'new'
+        activeTab: 'new',
+        ordersLoading: false
     })
 }));

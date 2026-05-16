@@ -1,9 +1,9 @@
 import { WAREHOUSE_STATS } from '../constants/data';
-import { WarehouseStat } from './types';
+import { WarehouseStat } from '../types/stat.types';
 
 const MOCK_DELAY = 800;
 
-export const homeService = {
+export const homeApi = {
     /**
      * MOCK API: Fetch warehouse statistics for the dashboard
      */

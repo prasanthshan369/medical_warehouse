@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Pressable } from 'react-native';
 import { icons } from '@/src/constants/icons';
-import { colors } from '@/src/constants/colors';
+import { colors } from '@/src/theme/colors';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -117,12 +117,12 @@ const ConfirmMoveBottomSheet: React.FC<ConfirmMoveBottomSheetProps> = ({
 
                             {/* Icon Header */}
                             <View className="w-20 h-20 bg-[#F2F2F2] rounded-full items-center justify-center mb-6">
-                                <Icon width={type === 'packer' ? 30 : 25} height={type === 'packer' ? 30 : 30} fill={colors.textSecondary} />
+                                <Icon width={type === 'packer' ? 30 : 25} height={type === 'packer' ? 30 : 30} fill={colors.text.secondary} />
                             </View>
 
                             {/* Confirmation Text */}
                             <Text
-                                style={{ color: colors.textSecondary }}
+                                style={{ color: colors.text.secondary }}
                                 className="text-[14px] font-inter-medium text-center leading-7 px-4 mb-8"
                             >
                                 {message}
@@ -131,14 +131,14 @@ const ConfirmMoveBottomSheet: React.FC<ConfirmMoveBottomSheetProps> = ({
                             {/* Warning Box (Only for Packer) */}
                             {type === 'packer' && (
                                 <View
-                                    style={{ backgroundColor: colors.warningBg }}
+                                    style={{ backgroundColor: colors.status.warningBg }}
                                     className="p-5 rounded-[20px] flex-row items-center mb-10 w-full"
                                 >
                                     <View className="mr-3">
-                                        <Info_warn width={20} height={20} fill={colors.warning} />
+                                        <Info_warn width={20} height={20} fill={colors.status.warning} />
                                     </View>
                                     <Text
-                                        style={{ color: colors.textMain }}
+                                        style={{ color: colors.text.DEFAULT }}
                                         className="flex-1 text-[12px] font-inter leading-5"
                                     >
                                         All items must be verified before proceeding to the packing station.
@@ -150,7 +150,7 @@ const ConfirmMoveBottomSheet: React.FC<ConfirmMoveBottomSheetProps> = ({
                             <TouchableOpacity
                                 activeOpacity={0.8}
                                 onPress={onConfirm}
-                                style={{ backgroundColor: colors.primary }}
+                                style={{ backgroundColor: colors.brand.primary }}
                                 className="w-full py-5 rounded-[28px] items-center"
                             >
                                 <Text className="text-white text-[16px] font-inter-semibold">

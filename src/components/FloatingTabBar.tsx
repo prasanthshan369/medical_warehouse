@@ -25,15 +25,15 @@ const ACTIVE_ICON_COLOR = '#222222';
 const INACTIVE_ICON_COLOR = '#969696';
 
 const LIQUID_SPRING_CONFIG = {
-    damping: 20,
-    stiffness: 150,
+    damping: 25,
+    stiffness: 300, // Increased from 150 for snappier movement
     mass: 1,
 };
 
 const FOLLOWER_SPRING_CONFIG = {
-    damping: 15,
-    stiffness: 100,
-    mass: 1.2,
+    damping: 20,
+    stiffness: 200, // Increased from 100
+    mass: 1, // Reduced from 1.2 for less inertia
 };
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
@@ -49,7 +49,8 @@ const FloatingTabBar = ({ state, navigation }: BottomTabBarProps) => {
 
     const tabWidth = useMemo(() => {
         if (dimensions.width === 0) return 0;
-        return (dimensions.width - 12) / state.routes.length;
+        // Standard outer padding subtraction (px-4 = 16px * 2 = 32px)
+        return (dimensions.width - 32) / state.routes.length;
     }, [dimensions.width, state.routes.length]);
 
     // Sync when system index changes (e.g. from swipe or button press elsewhere)
@@ -89,7 +90,7 @@ const FloatingTabBar = ({ state, navigation }: BottomTabBarProps) => {
         })
         .onUpdate((e) => {
             if (tabWidth > 0) {
-                const rawIndex = (e.x - 6) / tabWidth;
+                const rawIndex = (e.x - 16) / tabWidth;
                 const clampedIndex = Math.max(0, Math.min(state.routes.length - 1, rawIndex));
 
                 // FLUID MOVEMENT:
@@ -117,7 +118,7 @@ const FloatingTabBar = ({ state, navigation }: BottomTabBarProps) => {
         })
         .onEnd((e) => {
             if (tabWidth > 0) {
-                const index = Math.floor((e.x - 6) / tabWidth);
+                const index = Math.floor((e.x - 16) / tabWidth);
                 const finalIndex = Math.min(state.routes.length - 1, Math.max(0, index));
 
                 leaderX.value = withSpring(finalIndex, LIQUID_SPRING_CONFIG);
@@ -140,7 +141,7 @@ const FloatingTabBar = ({ state, navigation }: BottomTabBarProps) => {
 
         return {
             transform: [
-                { translateX: (start * tabWidth) + 6 },
+                { translateX: (start * tabWidth) + 16 }, 
                 { scaleY: interpolate(stretch, [0, tabWidth], [1, 0.95], Extrapolation.CLAMP) }
             ],
             width: tabWidth + stretch,
@@ -151,7 +152,7 @@ const FloatingTabBar = ({ state, navigation }: BottomTabBarProps) => {
 
     return (
         <View
-            className="absolute bottom-4 left-0 right-0 items-center px-6"
+            className="absolute  bottom-4 left-0 right-0 items-center px-6"
             style={{ paddingBottom: insets.bottom > 0 ? 0 : 10 }}
         >
             <GestureDetector gesture={combinedGesture}>
@@ -162,11 +163,11 @@ const FloatingTabBar = ({ state, navigation }: BottomTabBarProps) => {
                     style={{
                         backgroundColor: BAR_COLOR,
                         overflow: 'hidden',
-                        borderRadius: 35,
+                        borderRadius: 999,
                         borderWidth: 1,
                         borderColor: 'rgba(255, 255, 255, 0.05)',
                     }}
-                    className="flex-row py-1.5 px-1.5 items-center w-full max-w-[450px] shadow-2xl"
+                    className="flex-row py-5 px-4 items-center w-full max-w-[600px] shadow-2xl"
                 >
                     {/* Liquid White Pill Indicator */}
                     {dimensions.width > 0 && (
@@ -175,8 +176,8 @@ const FloatingTabBar = ({ state, navigation }: BottomTabBarProps) => {
                                 animatedPillStyle,
                                 {
                                     position: 'absolute',
-                                    height: dimensions.height - 12,
-                                    borderRadius: 30,
+                                    height: dimensions.height - 32, // 16px gap on all sides (matches px-4)
+                                    borderRadius: 999,
                                     shadowColor: '#000',
                                     shadowOffset: { width: 0, height: 4 },
                                     shadowOpacity: 0.15,
@@ -201,7 +202,7 @@ const FloatingTabBar = ({ state, navigation }: BottomTabBarProps) => {
                     )}
 
                     {state.routes.map((route, index) => {
-                        const tab = tabs[index];
+                        const tab = tabs.find(t => t.name === route.name);
                         if (!tab) return null;
 
                         return (
@@ -236,14 +237,13 @@ const TabItem = ({ icon: Icon, index, label, followerX }: TabItemProps) => {
         // POINT-TO-POINT ZOOM & COLOR:
         // We use a tighter threshold so that the active state is more binary
         // but still glides liquidly between points.
-        const scale = interpolate(distance, [0, 0.35], [1.3, 1], Extrapolation.CLAMP);
+        const scale = interpolate(distance, [0, 0.35], [1.15, 1], Extrapolation.CLAMP);
         const color = interpolateColor(distance, [0, 0.3], [ACTIVE_ICON_COLOR, INACTIVE_ICON_COLOR]);
 
         return {
             color,
             transform: [{ scale }],
             fontFamily: distance < 0.2 ? 'Inter_700Bold' : 'Inter_500Medium',
-            fontSize: 10,
         };
     });
 
@@ -260,12 +260,12 @@ const TabItem = ({ icon: Icon, index, label, followerX }: TabItemProps) => {
         <View className="flex-1 items-center justify-center py-2 h-full z-10">
             <Animated.View style={[{ alignItems: 'center' }]}>
                 <AnimatedIcon
-                    width={22}
-                    height={22}
+                    width={34}
+                    height={34}
                     animatedProps={animatedIconProps}
                 />
                 <AnimatedText
-                    className="mt-1 font-inter"
+                    className="mt-0 font-inter text-[12px] tracking-tighter"
                     style={animatedTextStyle}
                 >
                     {label}

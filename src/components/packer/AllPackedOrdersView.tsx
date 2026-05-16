@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity } from 'react-native';
 import { icons } from '@/src/constants/icons';
-import { colors } from '@/src/constants/colors';
 import { PACKED_ORDERS } from '@/src/constants/data';
 import PackedOrderCard from './PackedOrderCard';
 

@@ -1,99 +1,61 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, useWindowDimensions } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, {
-    useSharedValue,
-    useAnimatedScrollHandler,
-    runOnJS
-} from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
+import Animated from 'react-native-reanimated';
 import PickerTabs from './PickerTabs';
 import { NewOrdersTab, PartialOrdersTab, CompletedOrdersTab } from './tabs/OrderTabs';
 import { OrderSkeletonList } from './OrderSkeleton';
 import { useOrderStore } from '@/src/store/useOrderStore';
-import { OrderStatus } from '@/src/api/types';
+import { useOrdersQuery } from '../../hooks/useOrders';
+import { usePickerScroll } from '../../hooks/usePickerScroll';
 
 const PickerView = () => {
-    const { orders, activeTab, ordersLoading, ordersError, fetchOrders, setActiveTab } = useOrderStore();
+    const { activeTab, setActiveTab } = useOrderStore();
+    const { data: orders = [], isLoading, isError, error, refetch } = useOrdersQuery();
     const { width } = useWindowDimensions();
-    const insets = useSafeAreaInsets();
-    const scrollX = useSharedValue(0);
-    const scrollRef = useRef<Animated.ScrollView>(null);
-    const isManualScroll = useRef(false);
+    const { scrollX, scrollRef, scrollHandler } = usePickerScroll(activeTab, setActiveTab, width);
 
-    useEffect(() => {
-        fetchOrders();
-
-    }, []);
-
-    // Sync ScrollView position when activeTab changes (from button clicks)
-    useEffect(() => {
-        if (isManualScroll.current) {
-            isManualScroll.current = false;
-            return;
-        }
-
-        const index = ['new', 'partial', 'completed'].indexOf(activeTab);
-        if (index !== -1) {
-            scrollRef.current?.scrollTo({ x: index * width, animated: true });
-        }
-    }, [activeTab, width]);
-
-    // Animated scroll handler to track scroll position in real-time
-    const scrollHandler = useAnimatedScrollHandler({
-        onScroll: (event) => {
-            scrollX.value = event.contentOffset.x;
-        },
-        onMomentumEnd: (event) => {
-            const progress = event.contentOffset.x / width;
-            const index = Math.round(progress);
-            const statuses: OrderStatus[] = ['new', 'partial', 'completed'];
-            const newStatus = statuses[index];
-
-            if (newStatus && newStatus !== activeTab) {
-                isManualScroll.current = true;
-                runOnJS(setActiveTab)(newStatus);
-            }
-        }
-    });
-
-    const renderLoadingOrError = (tabWidth: number) => {
-        if (ordersLoading && !orders.length) {
-            return (
-                <View className="px-5">
-                    <OrderSkeletonList />
-                </View>
-            );
-        }
-        if (ordersError) {
-            return (
-                <View className="py-20 items-center" style={{ width: tabWidth }}>
-                    <Text className="text-red-500 font-inter-medium">{ordersError}</Text>
-                </View>
-            );
-        }
-        return null;
-    };
-
-    // PERFORMANCE OPTIMIZATION: Memoize filtered arrays to prevent re-filtering on every frame
     const newOrders = useMemo(() => orders.filter(o => o.status === 'new'), [orders]);
     const partialOrders = useMemo(() => orders.filter(o => o.status === 'partial'), [orders]);
     const completedOrders = useMemo(() => orders.filter(o => o.status === 'completed'), [orders]);
 
+    const handleRefresh = async () => {
+        try {
+            await refetch();
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        } catch (e) {
+            console.error('Failed to refresh orders:', e);
+        }
+    };
+
+    const renderContent = (content: React.ReactNode) => {
+        if (isLoading && !orders.length) return <OrderSkeletonList />;
+        if (isError) {
+            return (
+                <View className="py-20 items-center px-10" style={{ width }}>
+                    <Text className="text-red-500 font-inter-medium text-center">
+                        {(error as any)?.message || 'Failed to load orders'}
+                    </Text>
+                </View>
+            );
+        }
+        return content;
+    };
+
+    const refreshProps = { onRefresh: handleRefresh, refreshing: isLoading && orders.length > 0 };
+
     return (
         <View className="flex-1 bg-white">
-            {/* Header */}
-            <View className="px-5 py-4 bg-white">
-                <Text className="text-[22px] font-inter-bold text-[#222222] tracking-tighter">
+            <View className="px-5 py-6 bg-white flex-row justify-between items-center">
+                <Text className="text-[28px] font-inter-bold text-[#222222] tracking-tighter">
                     Picker
                 </Text>
             </View>
 
-            {/* Tab Navigation with Shared scrollX */}
             <View className="bg-white">
                 <PickerTabs scrollX={scrollX} viewportWidth={width} />
             </View>
 
-            {/* Swipeable Content */}
             <View className="flex-1 bg-[#F9F9F9]">
                 <Animated.ScrollView
                     ref={scrollRef}
@@ -104,19 +66,14 @@ const PickerView = () => {
                     scrollEventThrottle={16}
                     className="flex-1"
                 >
-                    {/* New Orders Page */}
                     <View style={{ width }}>
-                        {renderLoadingOrError(width) || <NewOrdersTab orders={newOrders} />}
+                        {renderContent(<NewOrdersTab orders={newOrders} {...refreshProps} />)}
                     </View>
-
-                    {/* Partial Orders Page */}
                     <View style={{ width }}>
-                        {renderLoadingOrError(width) || <PartialOrdersTab orders={partialOrders} />}
+                        {renderContent(<PartialOrdersTab orders={partialOrders} {...refreshProps} />)}
                     </View>
-
-                    {/* Completed Orders Page */}
                     <View style={{ width }}>
-                        {renderLoadingOrError(width) || <CompletedOrdersTab orders={completedOrders} />}
+                        {renderContent(<CompletedOrdersTab orders={completedOrders} {...refreshProps} />)}
                     </View>
                 </Animated.ScrollView>
             </View>

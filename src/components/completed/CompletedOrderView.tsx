@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Order } from '@/src/api/types';
-import { orderService } from '@/src/api/orderServices';
+import { Order } from '@/src/types/order.types';
+import { orderApi } from '@/src/api/order.api';
 import { icons } from '@/src/constants/icons';
-import { colors } from '@/src/constants/colors';
+import { colors } from '@/src/theme/colors';
 import CompletedOrderItemCard from './CompletedOrderItemCard';
 import { ItemPickingSkeletonList } from '../picking/ItemPickingSkeleton';
 
@@ -32,7 +32,7 @@ const CompletedOrderView: React.FC<CompletedOrderViewProps> = ({ orderId }) => {
     const loadOrderDetails = async () => {
         try {
             setLoading(true);
-            const data = await orderService.getOrderDetails(orderId);
+            const data = await orderApi.getOrderDetails(orderId);
             setOrder(data);
         } catch (error) {
             console.error('Failed to load completed order:', error);
@@ -49,9 +49,9 @@ const CompletedOrderView: React.FC<CompletedOrderViewProps> = ({ orderId }) => {
                     onPress={() => router.back()}
                     className="mr-5"
                 >
-                    <ArrowBack width={16} height={16} fill={colors.textMain} />
+                    <ArrowBack width={16} height={16} fill={colors.text.DEFAULT} />
                 </TouchableOpacity>
-                <Text style={{ color: colors.textMain }} className="text-[18px] font-inter-bold">Order Completion Details</Text>
+                <Text style={{ color: colors.text.DEFAULT }} className="text-[18px] font-inter-bold">Order Completion Details</Text>
             </View>
 
             {/* Content */}
@@ -73,16 +73,16 @@ const CompletedOrderView: React.FC<CompletedOrderViewProps> = ({ orderId }) => {
                             {/* Status Header */}
                             <View className="flex-row items-center mb-6">
                             <View 
-                                style={{ backgroundColor: `${colors.primary}15` }}
+                                style={{ backgroundColor: `${colors.brand.primary}15` }}
                                 className="w-12 h-12 rounded-full items-center justify-center mr-4"
                             >
-                                <EditorChoice width={32} height={32} fill={colors.primary} />
+                                <EditorChoice width={32} height={32} fill={colors.brand.primary} />
                             </View>
                             <View>
-                                <Text style={{ color: colors.textMain }} className="text-[18px] font-inter-semibold">
+                                <Text style={{ color: colors.text.DEFAULT }} className="text-[18px] font-inter-semibold">
                                     #{orderId}
                                     </Text>
-                                <Text style={{ color: colors.textSecondary }} className="text-[14px] font-inter-medium">
+                                <Text style={{ color: colors.text.secondary }} className="text-[14px] font-inter-medium">
                                     {order?.totalItems ?? 0} Items
                                     </Text>
                                 </View>
@@ -96,8 +96,8 @@ const CompletedOrderView: React.FC<CompletedOrderViewProps> = ({ orderId }) => {
                                     <Person width={20} height={20} fill="#666666" />
                                     </View>
                                     <View>
-                                    <Text style={{ color: colors.textSecondary }} className="text-[12px] font-inter-medium mb-0.5">Customer Name</Text>
-                                    <Text style={{ color: colors.textMain }} className="text-[15px] font-inter-medium">{order?.customerName}</Text>
+                                    <Text style={{ color: colors.text.secondary }} className="text-[12px] font-inter-medium mb-0.5">Customer Name</Text>
+                                    <Text style={{ color: colors.text.DEFAULT }} className="text-[15px] font-inter-medium">{order?.customerName}</Text>
                                     </View>
                                 </View>
 
@@ -107,15 +107,15 @@ const CompletedOrderView: React.FC<CompletedOrderViewProps> = ({ orderId }) => {
                                     <Clock width={18} height={18} fill="#666666" />
                                     </View>
                                     <View>
-                                    <Text style={{ color: colors.textSecondary }} className="text-[12px] font-inter-medium mb-0.5">Completion Date</Text>
-                                    <Text style={{ color: colors.textMain }} className="text-[15px] font-inter-medium">{order?.completionDate}</Text>
+                                    <Text style={{ color: colors.text.secondary }} className="text-[12px] font-inter-medium mb-0.5">Completion Date</Text>
+                                    <Text style={{ color: colors.text.DEFAULT }} className="text-[15px] font-inter-medium">{order?.completionDate}</Text>
                                     </View>
                                 </View>
                             </View>
                         </View>
 
                         {/* Section Label */}
-                    <Text  className="text-[14px] font-inter text-textSecondary mb-6">
+                    <Text  className="text-[14px] font-inter text-text-secondary mb-6">
                         {order?.pickingItems?.some(item => item.status === 'packed') ? 'Packed Items' : 'Picked Items'}
                         </Text>
 

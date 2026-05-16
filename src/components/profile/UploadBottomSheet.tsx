@@ -19,7 +19,7 @@ import Animated, {
 import { BlurView } from 'expo-blur';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '@/src/constants/colors';
+import { colors } from '@/src/theme/colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -149,7 +149,7 @@ const UploadBottomSheet: React.FC<UploadBottomSheetProps> = ({
                     {/* Header */}
                     <View style={styles.header}>
                         <View style={styles.headerIcon}>
-                            <Feather name="user" size={22} color={colors.primary} />
+                            <Feather name="user" size={22} color={colors.brand.primary} />
                         </View>
                         <View>
                             <Text style={styles.headerTitle}>Change Profile Photo</Text>
@@ -168,7 +168,7 @@ const UploadBottomSheet: React.FC<UploadBottomSheetProps> = ({
                             sublabel="Use your device camera"
                             onPress={onSelectCamera}
                             iconBg="#E8F5EE"
-                            iconColor={colors.primary}
+                            iconColor={colors.brand.primary}
                         />
                         <ActionRow
                             iconName="image"

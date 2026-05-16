@@ -1,24 +1,26 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, FlatList, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TextInput, TouchableOpacity, RefreshControl } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import OrderCard from '../OrderCard';
 import PartialOrderCard from '../PartialOrderCard';
 import CompletedOrderCard from '../CompletedOrderCard';
-import { Order } from '@/src/api/types';
+import { Order } from '@/src/types/order.types';
 import { icons } from '@/src/constants/icons';
 
 interface TabProps {
     orders: Order[];
+    onRefresh?: () => void;
+    refreshing?: boolean;
 }
 
-export const NewOrdersTab: React.FC<TabProps> = ({ orders }) => {
+export const NewOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refreshing }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const Search = icons.search;
     const SwapVert = icons.swapVert;
 
     const filteredOrders = useMemo(() => {
         return orders?.filter(order =>
-            order.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            order.orderId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (order.items && order.items.some(item => item.toLowerCase().includes(searchQuery.toLowerCase())))
         ) || [];
     }, [orders, searchQuery]);
@@ -56,6 +58,9 @@ export const NewOrdersTab: React.FC<TabProps> = ({ orders }) => {
                         </Text>
                     </View>
                 )}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} />
+                }
                 removeClippedSubviews={true}
                 initialNumToRender={5}
                 maxToRenderPerBatch={10}
@@ -65,7 +70,7 @@ export const NewOrdersTab: React.FC<TabProps> = ({ orders }) => {
     );
 };
 
-export const PartialOrdersTab: React.FC<TabProps> = ({ orders }) => {
+export const PartialOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refreshing }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const Search = icons.search;
     const SwapVert = icons.swapVert;
@@ -74,7 +79,7 @@ export const PartialOrdersTab: React.FC<TabProps> = ({ orders }) => {
         return orders?.filter(order =>
             order.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (order.items && order.items.some(item => item.toLowerCase().includes(searchQuery.toLowerCase()))) ||
-            order.customerName?.toLowerCase().includes(searchQuery.toLowerCase())
+            order.medicineSlug?.toLowerCase().includes(searchQuery.toLowerCase())
         ) || [];
     }, [orders, searchQuery]);
 
@@ -111,6 +116,9 @@ export const PartialOrdersTab: React.FC<TabProps> = ({ orders }) => {
                         </Text>
                     </View>
                 )}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} />
+                }
                 removeClippedSubviews={true}
                 initialNumToRender={5}
                 maxToRenderPerBatch={10}
@@ -120,7 +128,7 @@ export const PartialOrdersTab: React.FC<TabProps> = ({ orders }) => {
     );
 };
 
-export const CompletedOrdersTab: React.FC<TabProps> = ({ orders }) => {
+export const CompletedOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refreshing }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const Search = icons.search;
     const SwapVert = icons.swapVert;
@@ -128,7 +136,7 @@ export const CompletedOrdersTab: React.FC<TabProps> = ({ orders }) => {
     const filteredOrders = useMemo(() => {
         return orders?.filter(order =>
             order.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            order.customerName?.toLowerCase().includes(searchQuery.toLowerCase())
+            order.medicineSlug?.toLowerCase().includes(searchQuery.toLowerCase())
         ) || [];
     }, [orders, searchQuery]);
 
@@ -163,6 +171,9 @@ export const CompletedOrdersTab: React.FC<TabProps> = ({ orders }) => {
                         <Text className="text-black/30 font-inter-medium">No completed orders found</Text>
                     </View>
                 )}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} />
+                }
                 removeClippedSubviews={true}
                 initialNumToRender={5}
                 maxToRenderPerBatch={10}

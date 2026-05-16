@@ -16,9 +16,9 @@ import Animated, {
     Easing,
     interpolate
 } from 'react-native-reanimated';
-import { OrderItem } from '@/src/api/types';
+import { OrderItem } from '@/src/types/order.types';
 import CustomKeypad from '../common/CustomKeypad';
-import { colors } from '@/src/constants/colors';
+import { colors } from '@/src/theme/colors';
 
 interface PartialQuantityModalProps {
     isVisible: boolean;
@@ -83,7 +83,7 @@ const PartialQuantityModal: React.FC<PartialQuantityModalProps> = ({
 
     const handleConfirm = () => {
         const val = parseInt(quantity, 10);
-        if (!isNaN(val) && val >= 0 && item && val <= item.requiredQty) {
+        if (!isNaN(val) && val >= 0) {
             onConfirm(val);
         }
     };
@@ -116,24 +116,24 @@ const PartialQuantityModal: React.FC<PartialQuantityModalProps> = ({
                         >
                             {/* Header */}
                             <View className="items-center mb-6">
-                                <Text style={{ color: colors.textDeep }} className="text-[28px] font-bold text-center mb-1">
+                                <Text style={{ color: colors.text.deep }} className="text-[28px] font-bold text-center mb-1">
                                     {item?.name}
                                 </Text>
-                                <Text style={{ color: colors.textSecondary }} className="text-[18px] font-medium text-center">
+                                <Text style={{ color: colors.text.secondary }} className="text-[18px] font-medium text-center">
                                     {item?.requiredQty} Units Required
                                 </Text>
                             </View>
 
                             {/* Prompt */}
-                            <Text style={{ color: colors.textDeep }} className="text-[16px] font-normal text-center mb-6">
+                            <Text style={{ color: colors.text.deep }} className="text-[16px] font-normal text-center mb-6">
                                 Enter available quantity
                             </Text>
 
                             {/* Large Input Display (Blue Bordered Box) */}
                             <View
                                 style={{
-                                    backgroundColor: parseInt(quantity) > (item?.requiredQty || 0) ? '#FEF2F2' : colors.bgGray,
-                                    borderColor: parseInt(quantity) > (item?.requiredQty || 0) ? '#EF4444' : colors.blueInfo
+                                    backgroundColor: parseInt(quantity) > (item?.requiredQty || 0) ? '#FEF2F2' : colors.surface.gray,
+                                    borderColor: parseInt(quantity) > (item?.requiredQty || 0) ? '#EF4444' : colors.text.blue
                                 }}
                                 className="w-full h-36 rounded-2xl border-[1.5px] items-center justify-center mb-2"
                             >
@@ -142,7 +142,7 @@ const PartialQuantityModal: React.FC<PartialQuantityModalProps> = ({
                                         {quantity || '0'}
                                     </Text>
                                     <Animated.View
-                                        style={[caretStyle, { height: 50, width: 3, backgroundColor: colors.blueInfo, marginLeft: 4 }]}
+                                        style={[caretStyle, { height: 50, width: 3, backgroundColor: colors.text.blue, marginLeft: 4 }]}
                                     />
                                 </View>
                             </View>
@@ -159,13 +159,13 @@ const PartialQuantityModal: React.FC<PartialQuantityModalProps> = ({
                             {/* Footer Actions */}
                             <View className="flex-row items-center justify-end">
                                 <TouchableOpacity onPress={onClose} className="mr-8">
-                                    <Text style={{ color: colors.textDeep }} className="text-[18px] font-bold">Cancel</Text>
+                                    <Text style={{ color: colors.text.deep }} className="text-[18px] font-bold">Cancel</Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
                                     disabled={isInvalid}
                                     onPress={handleConfirm}
-                                    style={{ backgroundColor: isInvalid ? colors.bgGray : colors.primary, elevation: isInvalid ? 0 : 4 }}
+                                    style={{ backgroundColor: isInvalid ? colors.surface.gray : colors.brand.primary, elevation: isInvalid ? 0 : 4 }}
                                     className="px-10 py-4 rounded-full"
                                 >
                                     <Text className={`text-[18px] font-bold ${isInvalid ? 'text-black/20' : 'text-white'}`}>

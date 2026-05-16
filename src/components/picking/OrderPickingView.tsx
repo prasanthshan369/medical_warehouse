@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Order, OrderItem } from '@/src/api/types';
-import { orderService } from '@/src/api/orderServices';
+import { Order, OrderItem, BatchRow } from '@/src/types/order.types';
+import { orderApi } from '@/src/api/order.api';
 import OrderItemCard from './OrderItemCard';
 import PickingProgressFooter from './PickingProgressFooter';
 import ConfirmMoveBottomSheet from './ConfirmMoveBottomSheet';
 import PartialQuantityModal from './PartialQuantityModal';
 import OrderInfoPopup from './OrderInfoPopup';
-import { ItemPickingSkeletonList } from './ItemPickingSkeleton';
+import BatchSelectionModal from './BatchSelectionModal';
 import { useOrderStore } from '@/src/store/useOrderStore';
 import { icons } from '@/src/constants/icons';
-import { colors } from '@/src/constants/colors';
-
+import colors from '@/src/theme/colors';
+import { ItemPickingSkeletonList } from './ItemPickingSkeleton';
 
 interface OrderPickingViewProps {
     orderId: string;
@@ -26,9 +26,12 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId }) => {
     const [loading, setLoading] = useState(true);
     const [isConfirmSheetVisible, setConfirmSheetVisible] = useState(false);
     const [isPartialModalVisible, setPartialModalVisible] = useState(false);
+    const [isBatchModalVisible, setBatchModalVisible] = useState(false);
     const [isInfoSheetVisible, setInfoSheetVisible] = useState(false);
     const [headerHeight, setHeaderHeight] = useState(0);
-    const [activeItemForPartial, setActiveItemForPartial] = useState<OrderItem | null>(null);
+    const [activeItemForEdit, setActiveItemForEdit] = useState<OrderItem | null>(null);
+    const [itemBatches, setItemBatches] = useState<Record<string, BatchRow[]>>({});
+    const activeItemRef = useRef<OrderItem | null>(null);
     const { setActiveTab } = useOrderStore();
     const ArrowBack = icons.arrowBack;
     const Information = icons.info;
@@ -40,7 +43,7 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId }) => {
 
     const loadOrder = async () => {
         try {
-            const data = await orderService.getOrderDetails(orderId);
+            const data = await orderApi.getOrderDetails(orderId);
             if (data) {
                 setOrder(data);
                 setPickingItems(data.pickingItems || []);
@@ -55,27 +58,52 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId }) => {
     const handleToggleStatus = (id: string, newStatus: 'pending' | 'partial' | 'completed') => {
         setPickingItems(prev => prev.map(item => {
             if (item.id === id) {
-                // If it was partial and being set to pending/completed, reset picked qty or set to total
                 const pickedQty = newStatus === 'completed' ? item.requiredQty : 0;
                 return { ...item, status: newStatus, pickedQty };
             }
             return item;
         }));
+        if (newStatus === 'pending') {
+            setItemBatches(prev => {
+                const next = { ...prev };
+                delete next[id];
+                return next;
+            });
+        }
     };
 
     const handlePartialConfirm = (quantity: number) => {
-        if (activeItemForPartial) {
-            setPickingItems(prev => prev.map(item => {
-                if (item.id === activeItemForPartial.id) {
-                    // If entered quantity equals required, mark as completed
-                    const newStatus = quantity === item.requiredQty ? 'completed' : 'partial';
-                    return { ...item, status: newStatus, pickedQty: quantity };
+        const target = activeItemRef.current;
+        if (target) {
+            setPickingItems(prev => prev.map(i => {
+                if (i.id === target.id) {
+                    const newStatus = quantity >= i.requiredQty ? 'completed' : 'partial';
+                    return { ...i, status: newStatus, pickedQty: quantity };
                 }
-                return item;
+                return i;
             }));
-            setPartialModalVisible(false);
-            setActiveItemForPartial(null);
         }
+        // Always close modal and clean up regardless of ref state
+        setPartialModalVisible(false);
+        setActiveItemForEdit(null);
+        activeItemRef.current = null;
+    };
+
+    const handleBatchSave = (batches: BatchRow[]) => {
+        const target = activeItemRef.current;
+        if (target) {
+            setItemBatches(prev => ({ ...prev, [target.id]: batches }));
+            const totalPicked = batches.reduce((sum, b) => sum + (parseInt(b.quantity) || 0), 0);
+            setPickingItems(prev => prev.map(i => {
+                if (i.id === target.id) {
+                    return { ...i, pickedQty: totalPicked, status: totalPicked >= i.requiredQty ? 'completed' : 'partial' };
+                }
+                return i;
+            }));
+        }
+        setBatchModalVisible(false);
+        setActiveItemForEdit(null);
+        activeItemRef.current = null;
     };
 
     const pickedCount = pickingItems.filter(item => item.status === 'completed').length;
@@ -87,49 +115,51 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId }) => {
         <View className="flex-1 bg-white">
             {/* Custom Header */}
             <View
-                style={{ paddingTop: (insets.top || 40) + 20, zIndex: 20 }}
-                className="px-5 pb-4 flex-row justify-between items-center bg-white"
+                style={{ paddingTop: (insets.top || 20), zIndex: 20 }}
+                className="px-5 pb-4 flex-row items-center bg-white border-b border-[#F0F0F0]"
                 onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
             >
-                <View className="flex-row items-center">
-                    <TouchableOpacity onPress={() => router.back()} className="mr-5">
-                        <ArrowBack width={16} height={16} fill={colors.textMain} />
-                    </TouchableOpacity>
-                    <View>
-                        <Text style={{ color: colors.textMain }} className="text-[18px] font-inter-bold">{orderId}</Text>
-                        <Text style={{ color: colors.textSecondary }} className="text-[12px] font-inter mt-0.5">{loading ? '...' : `${order?.totalCount} Items`}</Text>
-                    </View>
+                <TouchableOpacity 
+                    onPress={() => router.back()} 
+                    className="w-10 h-10 items-center justify-center -ml-2"
+                >
+                    <ArrowBack width={18} height={18} fill={colors.text.DEFAULT} />
+                </TouchableOpacity>
+
+                <View className="flex-1 ml-1">
+                    <Text 
+                        style={{ color: colors.text.DEFAULT }} 
+                        className="text-[19px] font-inter-bold"
+                        numberOfLines={1}
+                    >
+                        Order #{order?.orderId || 'RX-7721'}
+                    </Text>
+                    <Text style={{ color: '#6A6A6A' }} className="text-[13px] font-inter-medium mt-0.5">
+                        {loading ? 'Loading...' : `${pickingItems.length} Medicines`}
+                    </Text>
                 </View>
+
                 <View className="flex-row items-center">
-                    {/* Info button — toggles popup, highlights when active */}
+                    {/* Info button */}
                     <TouchableOpacity
                         onPress={() => setInfoSheetVisible(prev => !prev)}
-                        className="mr-6"
-                        style={
-                            isInfoSheetVisible
-                                ? {
-                                    backgroundColor: '#F0F0F0',
-                                    borderRadius: 20,
-                                    padding: 6,
-                                    marginRight: 18,
-                                }
-                                : { padding: 6, marginRight: 18 }
-                        }
+                        className="p-2"
                     >
                         <Information
-                            width={20}
-                            height={20}
-                            fill={isInfoSheetVisible ? colors.primary : colors.textMain}
+                            width={22}
+                            height={22}
+                            fill={isInfoSheetVisible ? colors.brand.primary : colors.text.DEFAULT}
                         />
                     </TouchableOpacity>
-                    <TouchableOpacity>
-                        <Print width={20} height={20} fill={colors.textMain} />
+                    
+                    <TouchableOpacity className="p-2">
+                        <Print width={22} height={22} fill={colors.text.DEFAULT} />
                     </TouchableOpacity>
                 </View>
             </View>
 
             {loading ? (
-                <View style={{ backgroundColor: colors.bgMain }} className="flex-1">
+                <View style={{ backgroundColor: colors.surface.main }} className="flex-1">
                     <ItemPickingSkeletonList />
                 </View>
             ) : !order ? (
@@ -138,7 +168,7 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId }) => {
                 </View>
             ) : (
                 <ScrollView
-                    style={{ backgroundColor: colors.bgMain }}
+                    style={{ backgroundColor: colors.surface.main }}
                     className="flex-1 px-5 pt-4"
                     showsVerticalScrollIndicator={false}
                 >
@@ -146,10 +176,17 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId }) => {
                         <OrderItemCard
                             key={item.id}
                             item={item}
+                            batches={itemBatches[item.id]}
                             onToggleStatus={handleToggleStatus}
                             onPartialPress={(item) => {
-                                setActiveItemForPartial(item);
+                                activeItemRef.current = item;
+                                setActiveItemForEdit(item);
                                 setPartialModalVisible(true);
+                            }}
+                            onBatchPress={(item) => {
+                                activeItemRef.current = item;
+                                setActiveItemForEdit(item);
+                                setBatchModalVisible(true);
                             }}
                         />
                     ))}
@@ -185,12 +222,25 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId }) => {
             {/* Partial Quantity Modal */}
             <PartialQuantityModal
                 isVisible={isPartialModalVisible}
-                item={activeItemForPartial}
+                item={activeItemForEdit}
                 onClose={() => {
                     setPartialModalVisible(false);
-                    setActiveItemForPartial(null);
+                    setActiveItemForEdit(null);
                 }}
                 onConfirm={handlePartialConfirm}
+            />
+
+            {/* Batch Selection Modal */}
+            <BatchSelectionModal
+                isVisible={isBatchModalVisible}
+                item={activeItemForEdit}
+                initialBatches={activeItemForEdit ? itemBatches[activeItemForEdit.id] : undefined}
+                onClose={() => {
+                    setBatchModalVisible(false);
+                    setActiveItemForEdit(null);
+                    activeItemRef.current = null;
+                }}
+                onSave={handleBatchSave}
             />
 
             {/* Order Info Detailed Sheet */}
@@ -198,6 +248,7 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId }) => {
                 isVisible={isInfoSheetVisible}
                 onClose={() => setInfoSheetVisible(false)}
                 topOffset={headerHeight}
+                order={order}
             />
         </View>
     );

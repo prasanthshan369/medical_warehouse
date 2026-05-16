@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { Image, Text, View, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import { WarehouseStat } from '@/src/api/types';
+import { WarehouseStat } from '@/src/types/stat.types';
 import { icons } from '@/src/constants/icons';
 
 
@@ -18,28 +18,30 @@ const StatsCard = ({
     label,
     itemsPerHr,
     activeHours,
-    medsDelta,
+    totalItems,
     gradient,
     illustration,
     onPress,
 }: StatsCardProps) => {
     const illustrationSource = illustration === 'picks'
         ? require('@/assets/images/picks_tool.png')
+        : illustration === 'dispatch'
+        ? require('@/assets/images/Dispatch.png')
         : require('@/assets/images/packs_box.png');
 
     return (
         <TouchableOpacity
             activeOpacity={0.9}
             onPress={onPress}
-            className="mb-6 shadow-xl shadow-black/10"
+            className="mb-2 mt-4 shadow-xl shadow-black/10"
             style={{ borderRadius: 24 }}
         >
             {badge && (
                 <View
-                    className="absolute -top-7 right-4 z-10 px-5 py-1.5 flex-row items-center rounded-t-[10px] bg-primary"
+                    className="absolute -top-7 right-4 z-10 px-5 py-1.5 flex-row items-center rounded-t-[10px] bg-brand-primary"
                 >
-                    <MaterialCommunityIcons name="flag" size={13} color="white" />
-                    <Text className="text-white text-[10px] ml-1.5 tracking-tight font-inter-medium">{badge}</Text>
+                    <MaterialCommunityIcons name="flag" size={14} color="white" />
+                    <Text className="text-white text-[12px] ml-1.5 tracking-tight font-inter-bold">{badge}</Text>
                 </View>
             )}
 
@@ -84,14 +86,14 @@ const StatsCard = ({
                         <View className="flex-row items-center">
                             <icons.pill width={16} height={16} fill="#FFFFFF" />
                             <Text className="text-white/90 text-[13px] font-inter-medium ml-2">
-                                {medsDelta} Meds
+                                {totalItems} Items
                             </Text>
                         </View>
                     </View>
                 </View>
                 <Image
                     source={illustrationSource}
-                    className="absolute right-0 bottom-0 w-40 h-40"
+                    className={`absolute ${illustration === 'dispatch' ? 'right-6 bottom-2 w-48 h-48' : 'right-0 bottom-0 w-40 h-40'}`}
                     resizeMode="contain"
                 />
             </LinearGradient>

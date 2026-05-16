@@ -26,7 +26,7 @@ const OrderSkeleton = () => {
             </View>
             
             {/* Arrow icon placeholder */}
-            <View className="ml-4 w-5 h-5 rounded-full bg-[#F2F2F2]" />
+            <View className="ml-4 w-5 h-5 rounded-full bg-[#EBEBEB]" />
         </View>
     );
 };

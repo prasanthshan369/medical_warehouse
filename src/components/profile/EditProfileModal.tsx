@@ -11,7 +11,7 @@ import {
     Platform,
 } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { colors } from '@/src/constants/colors';
+import { colors } from '@/src/theme/colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
@@ -96,7 +96,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                             className=" items-center justify-center h-10 w-10 rounded-full bg-[#F0F0F0]"
                             activeOpacity={0.7}
                         >
-                            <Feather name="x" size={20} color={colors.textSecondary} />
+                            <Feather name="x" size={20} color={colors.text.secondary} />
                         </TouchableOpacity>
 
                     </View>
@@ -110,10 +110,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                     >
                         <View className="mt-6 gap-5">
                             <View className="gap-2">
-                                <Text className="text-[14px] font-semibold ml-1 uppercase tracking-wider" style={{ color: colors.textSecondary }}>First Name</Text>
+                                <Text className="text-[14px] font-semibold ml-1 uppercase tracking-wider" style={{ color: colors.text.secondary }}>First Name</Text>
                                 <View className="flex-row items-center bg-[#F9F9F9] rounded-[16px] border border-[#EEEEEE] px-3 h-14">
                                     <View className="w-9 h-9 rounded-[10px] items-center justify-center mr-3" style={{ backgroundColor: '#E8F4EC' }}>
-                                        <Feather name="user" size={18} color={colors.primary} />
+                                        <Feather name="user" size={18} color={colors.brand.primary} />
                                     </View>
                                     <TextInput
                                         className="flex-1 text-[16px] font-medium text-[#222222]"
@@ -126,10 +126,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                             </View>
 
                             <View className="gap-2">
-                                <Text className="text-[14px] font-semibold ml-1 uppercase tracking-wider" style={{ color: colors.textSecondary }}>Last Name</Text>
+                                <Text className="text-[14px] font-semibold ml-1 uppercase tracking-wider" style={{ color: colors.text.secondary }}>Last Name</Text>
                                 <View className="flex-row items-center bg-[#F9F9F9] rounded-[16px] border border-[#EEEEEE] px-3 h-14">
                                     <View className="w-9 h-9 rounded-[10px] items-center justify-center mr-3" style={{ backgroundColor: '#E8F4EC' }}>
-                                        <Feather name="user" size={18} color={colors.primary} />
+                                        <Feather name="user" size={18} color={colors.brand.primary} />
                                     </View>
                                     <TextInput
                                         className="flex-1 text-[16px] font-medium text-[#222222]"
@@ -142,10 +142,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                             </View>
 
                             <View className="gap-2">
-                                <Text className="text-[14px] font-semibold ml-1 uppercase tracking-wider" style={{ color: colors.textSecondary }}>Phone Number</Text>
+                                <Text className="text-[14px] font-semibold ml-1 uppercase tracking-wider" style={{ color: colors.text.secondary }}>Phone Number</Text>
                                 <View className="flex-row items-center bg-[#F9F9F9] rounded-[16px] border border-[#EEEEEE] px-3 h-14">
                                     <View className="w-9 h-9 rounded-[10px] items-center justify-center mr-3" style={{ backgroundColor: '#E8F4EC' }}>
-                                        <MaterialCommunityIcons name="phone" size={18} color={colors.primary} />
+                                        <MaterialCommunityIcons name="phone" size={18} color={colors.brand.primary} />
                                     </View>
                                     <TextInput
                                         className="flex-1 text-[16px] font-medium text-[#222222]"
@@ -162,7 +162,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                                 onPress={handleSave}
                                 disabled={loading}
                                 className="mt-2 h-14 rounded-[16px] items-center justify-center shadow-lg shadow-green-900/20"
-                                style={{ backgroundColor: colors.primary, opacity: loading ? 0.7 : 1 }}
+                                style={{ backgroundColor: colors.brand.primary, opacity: loading ? 0.7 : 1 }}
                                 activeOpacity={0.8}
                             >
                                 {loading ? (

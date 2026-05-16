@@ -13,14 +13,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useAuthStore } from '@/src/store/useAuthStore';
+import { authService } from '@/src/services/auth.service';
 import * as Haptics from 'expo-haptics';
 import Logo from '@/assets/images/logo.svg';
 import InputError from '@/src/components/common/InputError';
 
 const Login = () => {
   const router = useRouter();
-  const { login } = useAuthStore();
   const scrollRef = React.useRef<ScrollView>(null);
 
   const [email, setEmail] = useState('');
@@ -68,7 +67,7 @@ const Login = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      await login(email, password);
+      await authService.login(email, password);
       router.replace('/(tabs)');
     } catch (error: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);

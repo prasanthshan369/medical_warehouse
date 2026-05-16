@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from '../utils/urls';
-import axiosInstance from './client';
+import { apiClient } from './client';
 
 /**
  * Storage API - handles file uploads to S3 or storage server.
@@ -12,7 +12,7 @@ export const storageApi = {
      * @returns Promise with the upload response.
      */
     upload: async (formData: FormData) => {
-        return axiosInstance.post<{ success: boolean; data: { url: string } }>(
+        return apiClient.post<{ success: boolean; data: { url: string } }>(
             API_ENDPOINTS.AUTH_UPLOAD_AVATAR,
             formData,
             {
@@ -41,6 +41,6 @@ export const userApi = {
         avatarUrl?: string;
         isActive?: boolean;
     }) => {
-        return axiosInstance.patch(`${API_ENDPOINTS.AUTH_UPDATE_PROFILE}/${id}`, data);
+        return apiClient.patch(`${API_ENDPOINTS.AUTH_UPDATE_PROFILE}/${id}`, data);
     },
 };
