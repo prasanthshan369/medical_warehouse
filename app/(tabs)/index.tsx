@@ -1,12 +1,2 @@
-import HomeView from '@/src/components/home/HomeView';
-import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-const Dashboard = () => {
-    return (
-        <SafeAreaView className="flex-1 bg-background">
-            <HomeView />
-        </SafeAreaView>
-    );
-};
-
-export default Dashboard;
+import { HomeLayout } from '@/src/components/home/HomeLayout';
+export default HomeLayout;

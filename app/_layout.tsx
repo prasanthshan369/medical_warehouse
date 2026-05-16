@@ -18,11 +18,11 @@ import NotificationManager from "@/src/components/common/NotificationManager";
 import NetworkToast from "@/src/components/common/NetworkToast";
 import { initNetworkListener } from "@/src/utils/network";
 import axiosInstance from "@/src/api/client";
+import { setUnauthorizedHandler } from "@/src/api/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import * as Notifications from 'expo-notifications';
 import { notificationService } from "@/src/services/notification.service";
-import { authService } from "@/src/services/auth.service";
 import { useNotificationStore } from "@/src/store/useNotificationStore";
 
 SplashScreen.preventAutoHideAsync();
@@ -47,13 +47,19 @@ export default function RootLayout() {
     Inter_800ExtraBold
   });
 
-  const { isAuthenticated, userLoading } = useAuthStore();
+  const { isAuthenticated, isLoaded } = useAuthStore();
   const router = useRouter();
   const segments = useSegments();
 
   useEffect(() => {
     // 1. Core Auth & Storage Init
-    authService.initialize();
+    useAuthStore.getState().initialize();
+
+    // 2. Unauthorized handler — logs out when refresh token expires
+    setUnauthorizedHandler(() => {
+      queryClient.clear();
+      useAuthStore.getState().logout();
+    });
     
     // 2. Initialize network listener
     const unsubscribeNet = initNetworkListener(axiosInstance);
@@ -99,7 +105,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!loaded) return;
-    if (userLoading) return;
+    if (!isLoaded) return;
 
     const inAuthGroup = segments[0] === '(auth)';
 
@@ -108,7 +114,7 @@ export default function RootLayout() {
     } else if (isAuthenticated && inAuthGroup) {
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated, userLoading, segments, loaded]);
+  }, [isAuthenticated, isLoaded, segments, loaded]);
 
   useEffect(() => {
     if (loaded || error) {

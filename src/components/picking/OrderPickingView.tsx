@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, BackHandler } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Order, OrderItem, BatchRow } from '@/src/types/order.types';
-import { orderApi } from '@/src/api/order.api';
+import { orderService } from '@/src/services/order.service';
+import { useFulfillmentActions } from '@/src/hooks/useFulfillment';
+import { ExtendMinutes } from '@/src/types/fulfillment.types';
 import OrderItemCard from './OrderItemCard';
 import PickingProgressFooter from './PickingProgressFooter';
 import ConfirmMoveBottomSheet from './ConfirmMoveBottomSheet';
@@ -17,9 +19,16 @@ import { ItemPickingSkeletonList } from './ItemPickingSkeleton';
 
 interface OrderPickingViewProps {
     orderId: string;
+    expiresAt?: string;
 }
 
-const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId }) => {
+const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+};
+
+const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId, expiresAt }) => {
     const router = useRouter();
     const [order, setOrder] = useState<Order | null>(null);
     const [pickingItems, setPickingItems] = useState<OrderItem[]>([]);
@@ -33,7 +42,43 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId }) => {
     const [itemBatches, setItemBatches] = useState<Record<string, BatchRow[]>>({});
     const activeItemRef = useRef<OrderItem | null>(null);
     const { setActiveTab } = useOrderStore();
+    const { release, extend, isExtending } = useFulfillmentActions(orderId);
+
+    // ── Lock countdown timer ───────────────────────────────────────────────
+    const [lockExpiresAt, setLockExpiresAt] = useState(expiresAt);
+    const [secondsLeft, setSecondsLeft] = useState(() =>
+        expiresAt ? Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000)) : 0
+    );
+
+    useEffect(() => {
+        if (!lockExpiresAt) return;
+        const interval = setInterval(() => {
+            setSecondsLeft(Math.max(0, Math.floor((new Date(lockExpiresAt).getTime() - Date.now()) / 1000)));
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [lockExpiresAt]);
+
+    const handleExtend = async (minutes: ExtendMinutes) => {
+        const newLock = await extend(minutes);
+        if (newLock) setLockExpiresAt(newLock.expiresAt);
+    };
+
+    const isWarning = secondsLeft > 0 && secondsLeft < 180; // < 3 minutes
     const ArrowBack = icons.arrowBack;
+
+    const handleBack = useCallback(async () => {
+        try { await release(); } catch { /* lock expires naturally */ }
+        router.back();
+    }, [orderId]);
+
+    // Android hardware back button
+    useEffect(() => {
+        const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+            handleBack();
+            return true;
+        });
+        return () => sub.remove();
+    }, [handleBack]);
     const Information = icons.info;
     const Print = icons.print;
 
@@ -43,7 +88,7 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId }) => {
 
     const loadOrder = async () => {
         try {
-            const data = await orderApi.getOrderDetails(orderId);
+            const data = await orderService.getById(orderId);
             if (data) {
                 setOrder(data);
                 setPickingItems(data.pickingItems || []);
@@ -119,8 +164,8 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId }) => {
                 className="px-5 pb-4 flex-row items-center bg-white border-b border-[#F0F0F0]"
                 onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
             >
-                <TouchableOpacity 
-                    onPress={() => router.back()} 
+                <TouchableOpacity
+                    onPress={handleBack}
                     className="w-10 h-10 items-center justify-center -ml-2"
                 >
                     <ArrowBack width={18} height={18} fill={colors.text.DEFAULT} />
@@ -157,6 +202,39 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId }) => {
                     </TouchableOpacity>
                 </View>
             </View>
+
+            {/* Lock countdown timer */}
+            {lockExpiresAt && (
+                <View
+                    style={{ backgroundColor: isWarning ? colors.status.warningBg : colors.brand.primarySoft }}
+                    className="flex-row items-center justify-between px-5 py-2"
+                >
+                    <Text
+                        style={{ color: isWarning ? colors.status.warning : colors.brand.primary }}
+                        className="font-inter-medium text-[13px]"
+                    >
+                        {secondsLeft === 0 ? 'Lock expired' : `⏱  ${formatTime(secondsLeft)} remaining`}
+                    </Text>
+                    <View className="flex-row gap-2">
+                        {(['2', '5'] as ExtendMinutes[]).map((min) => (
+                            <TouchableOpacity
+                                key={min}
+                                onPress={() => handleExtend(min)}
+                                disabled={isExtending || secondsLeft === 0}
+                                style={{ borderColor: isWarning ? colors.status.warning : colors.brand.primary }}
+                                className="px-3 py-1 rounded-full border"
+                            >
+                                <Text
+                                    style={{ color: isWarning ? colors.status.warning : colors.brand.primary }}
+                                    className="font-inter-medium text-[12px]"
+                                >
+                                    +{min} min
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+            )}
 
             {loading ? (
                 <View style={{ backgroundColor: colors.surface.main }} className="flex-1">

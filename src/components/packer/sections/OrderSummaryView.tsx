@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { icons } from '@/src/constants/icons';
 import { colors } from '@/src/theme/colors';
-import { Order, OrderItem } from '@/src/types/order.types';
-import { orderApi } from '@/src/api/order.api';
+import { Order } from '@/src/types/order.types';
+import { orderService } from '@/src/services/order.service';
 
 interface OrderSummaryViewProps {
     orderId: string;
@@ -26,7 +26,7 @@ const OrderSummaryView: React.FC<OrderSummaryViewProps> = ({ orderId }) => {
     const loadOrder = async () => {
         try {
             setLoading(true);
-            const data = await orderApi.getOrderDetails(orderId);
+            const data = await orderService.getById(orderId);
             setOrder(data);
         } catch (error) {
             console.error(error);

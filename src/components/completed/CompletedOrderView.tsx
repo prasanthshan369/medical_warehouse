@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Order } from '@/src/types/order.types';
-import { orderApi } from '@/src/api/order.api';
+import { orderService } from '@/src/services/order.service';
 import { icons } from '@/src/constants/icons';
 import { colors } from '@/src/theme/colors';
 import CompletedOrderItemCard from './CompletedOrderItemCard';
@@ -32,7 +32,7 @@ const CompletedOrderView: React.FC<CompletedOrderViewProps> = ({ orderId }) => {
     const loadOrderDetails = async () => {
         try {
             setLoading(true);
-            const data = await orderApi.getOrderDetails(orderId);
+            const data = await orderService.getById(orderId);
             setOrder(data);
         } catch (error) {
             console.error('Failed to load completed order:', error);

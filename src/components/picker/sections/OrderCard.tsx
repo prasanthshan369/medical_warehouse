@@ -5,7 +5,8 @@ import { Image } from 'expo-image';
 import { Order } from '@/src/types/order.types';
 import { icons } from '@/src/constants/icons';
 import { colors } from '@/src/theme/colors';
-import TimeAgo from '../common/TimeAgo';
+import TimeAgo from '../../common/TimeAgo';
+import { useFulfillmentActions } from '@/src/hooks/useFulfillment';
 
 interface OrderCardProps {
     order: Order;
@@ -13,6 +14,16 @@ interface OrderCardProps {
 
 const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
     const router = useRouter();
+    const { claim, isClaiming } = useFulfillmentActions();
+
+    const handlePress = async () => {
+        try {
+            const lock = await claim(order.id);
+            router.push({ pathname: '/order/[id]', params: { id: order.id, expiresAt: lock.expiresAt } });
+        } catch {
+            // error notification handled inside useFulfillmentActions
+        }
+    };
 
     const ArrowForward = icons.arrowForward;
     const medicineImages = order.images || [];
@@ -62,9 +73,8 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
     return (
         <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => {
-                router.push({ pathname: '/order/[id]', params: { id: order.id } })
-            }}
+            onPress={handlePress}
+            disabled={isClaiming}
             className="flex-row items-center bg-white p-4 rounded-2xl mb-4 border"
             style={{
                 borderColor: colors.border.light,

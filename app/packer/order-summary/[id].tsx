@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
-import OrderSummaryView from '@/src/components/packer/OrderSummaryView';
+import OrderSummaryView from '@/src/components/packer/sections/OrderSummaryView';
 
 export default function OrderSummaryRoute() {
     const { id } = useLocalSearchParams();

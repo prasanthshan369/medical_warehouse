@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { icons } from '@/src/constants/icons';
 import { colors } from '@/src/constants/colors';
-import AllPackedOrdersView from '@/src/components/packer/AllPackedOrdersView';
+import AllPackedOrdersView from '@/src/components/packer/sections/AllPackedOrdersView';
 
 const AllPackedOrders = () => {
     const router = useRouter();

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { WarehouseStat } from '../types/stat.types';
+import { WarehouseStat } from '../types/home';
 import { WAREHOUSE_STATS as STATIC_STATS } from '../constants/data';
 
 interface HomeState {

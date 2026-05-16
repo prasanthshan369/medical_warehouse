@@ -22,6 +22,18 @@ export const formatTimeAgo = (dateInput: string | Date | number): string => {
 };
 
 /**
+ * Formats a date into expiry format (e.g., "05/2026")
+ */
+export const formatExpiryDate = (dateInput: string | Date | number): string => {
+    const date = new Date(dateInput);
+    if (isNaN(date.getTime())) return '';
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+};
+
+/**
  * Formats a date into a human-readable string (e.g., "Oct 12, 09:30 AM")
  */
 export const formatOrderDate = (dateInput: string | Date | number): string => {

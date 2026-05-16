@@ -1,25 +1,44 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderService } from '../services/order.service';
+import { toAppError } from '../api/errors';
+import { useNotificationStore } from '../store/useNotificationStore';
+import { ListOrdersParams } from '../types/order.types';
 
-/**
- * Hook to fetch the list of orders for the picker queue.
- * Handles caching and automatic background refetching.
- */
-export const useOrdersQuery = () => {
-  return useQuery({
-    queryKey: ['orders'],
-    queryFn: () => orderService.fetchOrders(),
-  });
+export const useOrdersQuery = (params?: ListOrdersParams) => {
+    return useQuery({
+        queryKey: ['orders', params],
+        queryFn: () => orderService.list(params),
+    });
 };
 
-/**
- * Hook to fetch the details of a specific order.
- * @param orderId - The unique ID of the order to fetch.
- */
+export const useOrdersDetailedQuery = (params?: ListOrdersParams) => {
+    return useQuery({
+        queryKey: ['orders', 'detailed', params],
+        queryFn: () => orderService.listDetailed(params),
+    });
+};
+
 export const useOrderDetailQuery = (orderId: string) => {
-  return useQuery({
-    queryKey: ['order', orderId],
-    queryFn: () => orderService.getOrderDetails(orderId),
-    enabled: !!orderId, // Only fetch if orderId is provided
-  });
+    return useQuery({
+        queryKey: ['order', orderId],
+        queryFn: () => orderService.getById(orderId),
+        enabled: !!orderId,
+    });
+};
+
+export const useUpdateOrderStatus = () => {
+    const queryClient = useQueryClient();
+    const addNotification = useNotificationStore((s) => s.addNotification);
+
+    return useMutation({
+        mutationFn: ({ id, status, reason }: { id: string; status: number; reason?: string }) =>
+            orderService.updateStatus(id, status, reason),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['orders'] });
+            addNotification({ title: 'Status updated', message: 'Order status has been updated.', type: 'success' });
+        },
+        onError: (error) => {
+            addNotification({ title: 'Update failed', message: toAppError(error).message, type: 'error' });
+        },
+    });
 };

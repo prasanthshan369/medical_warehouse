@@ -1,5 +1,5 @@
 import React from 'react';
-import OrderSuccessView from '../common/OrderSuccessView';
+import OrderSuccessView from '../../common/OrderSuccessView';
 
 const PackingSuccessView = () => (
     <OrderSuccessView

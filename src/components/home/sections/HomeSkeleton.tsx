@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import Skeleton from '../common/Skeleton';
+import Skeleton from '@/src/components/common/Skeleton';
 
 export const HeaderSkeleton = () => {
     return (

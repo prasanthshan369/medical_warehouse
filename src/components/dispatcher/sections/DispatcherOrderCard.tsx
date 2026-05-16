@@ -1,14 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { icons } from '@/src/constants/icons';
-
-interface DispatcherOrderCardProps {
-    id: string;
-    idDisplay?: string;
-    customerName: string;
-    reviewedOn: string;
-    onPress?: () => void;
-}
+import { DispatcherOrderCardProps } from '@/src/types/dispatcher';
 
 const DispatcherOrderCard: React.FC<DispatcherOrderCardProps> = ({
     id,

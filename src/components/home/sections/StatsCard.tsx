@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { Image, Text, View, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import { WarehouseStat } from '@/src/types/stat.types';
+import { WarehouseStat } from '@/src/types/home';
 import { icons } from '@/src/constants/icons';
 
 

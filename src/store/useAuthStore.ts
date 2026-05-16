@@ -1,27 +1,61 @@
 import { create } from 'zustand';
 import { User } from '@/src/types/auth.types';
+import { tokenStorage } from '@/src/lib/storage';
+import { setAccessToken } from '@/src/api/client';
+import { authApi } from '@/src/api/auth.api';
 
 interface AuthState {
     user: User | null;
     accessToken: string | null;
     isAuthenticated: boolean;
-    userLoading: boolean;
-    
-    // Setters
+    isLoaded: boolean;
+
     setUser: (user: User | null) => void;
-    setAccessToken: (token: string | null) => void;
-    setUserLoading: (loading: boolean) => void;
-    clearAuth: () => void;
+    initialize: () => Promise<void>;
+    login: (token: string, expiresIn?: number) => Promise<void>;
+    logout: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
     user: null,
     accessToken: null,
     isAuthenticated: false,
-    userLoading: true,
+    isLoaded: false,
 
-    setUser: (user) => set({ user, isAuthenticated: !!user }),
-    setAccessToken: (accessToken) => set({ accessToken, isAuthenticated: !!accessToken }),
-    setUserLoading: (userLoading) => set({ userLoading }),
-    clearAuth: () => set({ user: null, accessToken: null, isAuthenticated: false, userLoading: false }),
+    setUser: (user) => set({ user }),
+
+    initialize: async () => {
+        try {
+            const token = await tokenStorage.getAccessToken();
+            if (token) {
+                setAccessToken(token);
+                set({ accessToken: token, isAuthenticated: true });
+                try {
+                    const response = await authApi.getMe();
+                    if (response.success) {
+                        set({ user: response.data });
+                    }
+                } catch {
+                    console.warn('[Auth] Session verification failed.');
+                }
+            }
+        } finally {
+            set({ isLoaded: true });
+        }
+    },
+
+    login: async (token: string, expiresIn?: number) => {
+        setAccessToken(token);
+        set({ accessToken: token, isAuthenticated: true });
+        await tokenStorage.set(token);
+        if (expiresIn) {
+            await tokenStorage.setExpiresAt(Date.now() + expiresIn * 1000);
+        }
+    },
+
+    logout: async () => {
+        setAccessToken(null);
+        set({ user: null, accessToken: null, isAuthenticated: false });
+        await tokenStorage.clearToken();
+    },
 }));

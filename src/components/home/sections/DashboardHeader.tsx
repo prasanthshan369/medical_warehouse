@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 
 const DashboardHeader = () => {
     const router = useRouter();
-    const { user, userLoading } = useAuthStore();
+    const { user } = useAuthStore();
     const displayName = user?.profile?.firstName || user?.email?.split('@')[0] || 'Picker';
 
     return (
@@ -34,7 +34,7 @@ const DashboardHeader = () => {
                 </TouchableOpacity>
                 <View>
                     <Text className="text-[28px] text-[#1A1A1A] leading-tight font-inter-bold tracking-tight">
-                        Welcome, {userLoading && !user ? '...' : displayName}
+                        Welcome, {user ? displayName : '...'}
                     </Text>
                 </View>
             </View>

@@ -21,7 +21,7 @@ const Profile = () => {
     const router = useRouter();
     const {
         data: user,
-        isLoading: userLoading,
+        isLoading: profileLoading,
         isFetching: refreshing,
         refetch
     } = useUserQuery();
@@ -98,7 +98,6 @@ const Profile = () => {
                         setIsLoggingOut(true);
                         try {
                             await authService.logout();
-                            router.replace('/(auth)/login');
                         } catch (error) {
                             console.error('Logout failed:', error);
                             setIsLoggingOut(false);
@@ -115,7 +114,7 @@ const Profile = () => {
     const CalendarIcon = icons.calendar_month;
     const LogoutIcon = icons.logout;
 
-    if (userLoading) {
+    if (profileLoading) {
         return <ProfileSkeleton />;
     }
 

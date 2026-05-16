@@ -1,9 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, RefreshControl } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import OrderCard from '../OrderCard';
-import PartialOrderCard from '../PartialOrderCard';
-import CompletedOrderCard from '../CompletedOrderCard';
+import OrderCard from './OrderCard';
+import PartialOrderCard from './PartialOrderCard';
+import CompletedOrderCard from './CompletedOrderCard';
 import { Order } from '@/src/types/order.types';
 import { icons } from '@/src/constants/icons';
 

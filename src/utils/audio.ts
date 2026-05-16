@@ -2,12 +2,12 @@
 import { AppState } from 'react-native';
 import { NotificationType } from '../store/useNotificationStore';
 
-const SOUNDS: Record<NotificationType, string> = {
-  critical: 'https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3',
-  error: 'https://assets.mixkit.co/active_storage/sfx/1000/1000-preview.mp3',
-  warning: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',
-  success: 'https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3',
-  info: 'https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3',
+const SOUNDS: Record<NotificationType, any> = {
+  critical: require('../../assets/sounds/warning.mp3'),
+  error:    require('../../assets/sounds/warning.mp3'),
+  warning:  require('../../assets/sounds/warning.mp3'),
+  success:  require('../../assets/sounds/success.mp3'),
+  info:     require('../../assets/sounds/success.mp3'),
 };
 
 let lastPlayedAt = 0;

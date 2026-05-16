@@ -14,8 +14,15 @@ export const API_ENDPOINTS = {
     AUTH_UPDATE_PROFILE: '/api/v1/users',
     AUTH_UPLOAD_AVATAR: '/api/v1/storage/upload',
     GET_PICKER_QUEUE: '/api/v1/orders/staff/picker-queue',
-    GET_ORDER_DETAILS: '/api/v1/orders/staff',
+    GET_PICKER_QUEUE_DETAILED: '/api/v1/orders/staff/picker-queue/detailed',
+    GET_ORDER_BY_ID: (id: string) => `/api/v1/orders/staff/${id}`,
+    UPDATE_ORDER_STATUS: (id: string) => `/api/v1/orders/staff/${id}/status`,
 
+    // Fulfillment / Picking locks
+    FULFILLMENT_CLAIM: (orderId: string) => `/api/v1/fulfillment/orders/${orderId}/claim`,
+    FULFILLMENT_RELEASE: (orderId: string) => `/api/v1/fulfillment/orders/${orderId}/release`,
+    FULFILLMENT_EXTEND: (orderId: string) => `/api/v1/fulfillment/orders/${orderId}/extend`,
+    FULFILLMENT_ACTIVE_LOCKS: '/api/v1/fulfillment/active-locks',
 }
 
 const URLS = {

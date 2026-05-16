@@ -82,3 +82,22 @@ const Skeleton = ({
 };
 
 export default Skeleton;
+
+/**
+ * 2x2 image grid skeleton — matches the OrderCard image grid layout.
+ */
+export const ImageGridSkeleton = ({ size = 80 }: { size?: number }) => {
+    const cell = Math.floor((size - 4) / 2);
+    return (
+        <View style={{ width: size, height: size }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+                <Skeleton width={cell} height={cell} borderRadius={6} />
+                <Skeleton width={cell} height={cell} borderRadius={6} />
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Skeleton width={cell} height={cell} borderRadius={6} />
+                <Skeleton width={cell} height={cell} borderRadius={6} />
+            </View>
+        </View>
+    );
+};

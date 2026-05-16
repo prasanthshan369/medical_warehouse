@@ -54,6 +54,8 @@ export interface ApiOrderItem {
     };
     quantity: number;
     status: string;
+    batchNumber?: string;
+    expiryDate?: string;
 }
 
 export interface ApiOrder {
@@ -92,4 +94,22 @@ export interface ApiPickerQueueResponse {
         limit: number;
         totalPages: number;
     };
+}
+
+export interface PaginatedResponse<T> {
+    success: boolean;
+    data: T[];
+    meta: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    };
+}
+
+export interface ListOrdersParams {
+    page?: number;
+    limit?: number;
+    status?: number;
+    search?: string;
 }

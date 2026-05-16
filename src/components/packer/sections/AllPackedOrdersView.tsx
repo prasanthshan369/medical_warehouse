@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity } from 'react-native';
 import { icons } from '@/src/constants/icons';
 import { PACKED_ORDERS } from '@/src/constants/data';
-import PackedOrderCard from './PackedOrderCard';
+import PackedOrderCard from '@/src/components/packer/sections/PackedOrderCard';
 
 const AllPackedOrdersView = () => {
     const [searchQuery, setSearchQuery] = useState('');

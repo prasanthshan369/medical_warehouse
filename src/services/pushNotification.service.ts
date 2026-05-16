@@ -9,6 +9,10 @@ import { Platform } from 'react-native';
  */
 export const pushNotificationService = {
   registerForPushAsync: async () => {
+    // Check if we are in Expo Go (which doesn't support tokens in SDK 53+)
+    const isExpoGo = Constants?.executionEnvironment === 'storeClient';
+    if (isExpoGo) return null;
+
     if (!Device.isDevice) {
       console.warn('Push Notifications require a physical device.');
       return null;
@@ -52,14 +56,6 @@ export const pushNotificationService = {
         },
       },
     ]);
-
-    // Check if we are in Expo Go (which doesn't support tokens in SDK 54+)
-    const isExpoGo = Constants?.executionEnvironment === 'storeClient';
-    
-    if (isExpoGo) {
-      console.info('Push Notifications: Remote tokens are not supported in Expo Go. Use a Development Build for this feature.');
-      return null;
-    }
 
     try {
       const token = (await Notifications.getExpoPushTokenAsync()).data;

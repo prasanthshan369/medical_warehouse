@@ -1,5 +1,5 @@
 import { WAREHOUSE_STATS } from '../constants/data';
-import { WarehouseStat } from '../types/stat.types';
+import { WarehouseStat } from '../types/home';
 
 const MOCK_DELAY = 800;
 

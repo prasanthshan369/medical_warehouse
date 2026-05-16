@@ -3,12 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { icons } from '@/src/constants/icons';
 import { colors } from '@/src/theme/colors';
-import { Order } from '@/src/types/order.types';
-
-interface PackedOrderCardProps {
-    order: Order;
-    isLast?: boolean;
-}
+import { PackedOrderCardProps } from '@/src/types/packer';
 
 const PackedOrderCard: React.FC<PackedOrderCardProps> = ({ order, isLast }) => {
     const router = useRouter();
