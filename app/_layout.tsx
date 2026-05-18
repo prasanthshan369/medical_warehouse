@@ -17,6 +17,7 @@ import { useAuthStore } from "@/src/store/useAuthStore";
 import NotificationManager from "@/src/components/common/NotificationManager";
 import NetworkToast from "@/src/components/common/NetworkToast";
 import { initNetworkListener } from "@/src/utils/network";
+import { requestQueue } from "@/src/utils/requestQueue";
 import axiosInstance from "@/src/api/client";
 import { setUnauthorizedHandler } from "@/src/api/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -58,6 +59,7 @@ export default function RootLayout() {
     // 2. Unauthorized handler — logs out when refresh token expires
     setUnauthorizedHandler(() => {
       queryClient.clear();
+      requestQueue.clear();
       useAuthStore.getState().logout();
     });
     

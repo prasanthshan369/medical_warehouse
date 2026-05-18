@@ -1,5 +1,6 @@
 import { tabs } from '@/src/constants/data';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { useTabBarStore } from '@/src/store/useTabBarStore';
 import React, { useEffect, useMemo, useState } from 'react';
 import { LayoutChangeEvent, Text, View } from 'react-native';
 import Animated, {
@@ -42,6 +43,7 @@ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 const FloatingTabBar = ({ state, navigation }: BottomTabBarProps) => {
     const insets = useSafeAreaInsets();
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const setTabBarHeight = useTabBarStore(s => s.setTabBarHeight);
 
     const leaderX = useSharedValue(state.index);
     const followerX = useSharedValue(state.index);
@@ -152,8 +154,9 @@ const FloatingTabBar = ({ state, navigation }: BottomTabBarProps) => {
 
     return (
         <View
-            className="absolute  bottom-4 left-0 right-0 items-center px-6"
+            className="absolute bottom-4 left-0 right-0 items-center px-6"
             style={{ paddingBottom: insets.bottom > 0 ? 0 : 10 }}
+            onLayout={(e) => setTabBarHeight(e.nativeEvent.layout.height + 16 + 12)}
         >
             <GestureDetector gesture={combinedGesture}>
                 <AnimatedBlurView

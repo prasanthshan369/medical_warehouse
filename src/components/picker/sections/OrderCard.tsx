@@ -32,9 +32,9 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
     const renderImageGrid = () => {
         if (medicineImages.length === 0) {
             return (
-                <View 
-                    style={{ backgroundColor: colors.surface.gray }} 
-                    className="w-16 h-16 rounded-xl items-center justify-center"
+                <View
+                    style={{ backgroundColor: colors.surface.gray }}
+                    className="w-28 h-28 rounded-xl items-center justify-center"
                 >
                     <icons.picker width={24} height={24} stroke={colors.text.muted} />
                 </View>
@@ -46,7 +46,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
         const displayImages = medicineImages.slice(0, 4);
 
         return (
-            <View className="w-20 h-20 flex-row flex-wrap justify-between content-between">
+            <View className="w-28 h-28 flex-row flex-wrap justify-between content-between">
                 {displayImages.map((img, idx) => (
                     <View 
                         key={idx}
@@ -75,14 +75,9 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
             activeOpacity={0.7}
             onPress={handlePress}
             disabled={isClaiming}
-            className="flex-row items-center bg-white p-4 rounded-2xl mb-4 border"
+            className="flex-row items-center bg-white p-5 rounded-2xl mb-4 border"
             style={{
                 borderColor: colors.border.light,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.05,
-                shadowRadius: 15,
-                elevation: 2
             }}
         >   
             {/* Left: Image Grid */}
@@ -93,13 +88,13 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
             {/* Middle: Order Info */}
             <View className="flex-1">
                 <View className="flex-row items-center mb-1">
-                    <Text style={{ color: colors.text.DEFAULT }} className="font-inter-bold text-[19px]">
+                    <Text style={{ color: colors.text.DEFAULT }} className="font-inter-bold text-[20px]">
                         Order #{order.orderId || order.id.slice(0, 8)}
                     </Text>
                 </View>
                 <Text
                     style={{ color: colors.text.secondary }}
-                    className="font-inter-medium text-[15px] mb-3"
+                    className="font-inter-medium text-[16px] mb-3"
                     numberOfLines={1}
                 >
                     {order.medicineSlug}
@@ -108,7 +103,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
                     <TimeAgo
                         date={order.date || ''}
                         style={{ color: colors.text.muted }}
-                        className="font-inter text-[13px]"
+                        className="font-inter text-[14px]"
                     />
                 </View>
             </View>

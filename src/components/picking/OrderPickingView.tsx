@@ -10,8 +10,9 @@ import OrderItemCard from './OrderItemCard';
 import PickingProgressFooter from './PickingProgressFooter';
 import ConfirmMoveBottomSheet from './ConfirmMoveBottomSheet';
 import PartialQuantityModal from './PartialQuantityModal';
-import OrderInfoPopup from './OrderInfoPopup';
 import BatchSelectionModal from './BatchSelectionModal';
+import SessionExpirySheet from './SessionExpirySheet';
+import OrderInfoPopup from './OrderInfoPopup';
 import { useOrderStore } from '@/src/store/useOrderStore';
 import { icons } from '@/src/constants/icons';
 import colors from '@/src/theme/colors';
@@ -22,11 +23,6 @@ interface OrderPickingViewProps {
     expiresAt?: string;
 }
 
-const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60).toString().padStart(2, '0');
-    const s = (secs % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-};
 
 const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId, expiresAt }) => {
     const router = useRouter();
@@ -38,6 +34,8 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId, expiresAt 
     const [isBatchModalVisible, setBatchModalVisible] = useState(false);
     const [isInfoSheetVisible, setInfoSheetVisible] = useState(false);
     const [headerHeight, setHeaderHeight] = useState(0);
+    const [isExpirySheetVisible, setExpirySheetVisible] = useState(false);
+    const expiryAlertShownRef = useRef(false);
     const [activeItemForEdit, setActiveItemForEdit] = useState<OrderItem | null>(null);
     const [itemBatches, setItemBatches] = useState<Record<string, BatchRow[]>>({});
     const activeItemRef = useRef<OrderItem | null>(null);
@@ -58,12 +56,28 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId, expiresAt 
         return () => clearInterval(interval);
     }, [lockExpiresAt]);
 
+    // Auto-show expiry warning sheet at 1 minute remaining; reset when time is extended back above 60s
+    useEffect(() => {
+        if (secondsLeft > 60) {
+            expiryAlertShownRef.current = false;
+        } else if (secondsLeft <= 60 && secondsLeft > 0 && !expiryAlertShownRef.current) {
+            expiryAlertShownRef.current = true;
+            setExpirySheetVisible(true);
+        }
+    }, [secondsLeft]);
+
+    // Preview: auto-show expiry sheet 5 seconds after entering the screen
+    useEffect(() => {
+        const t = setTimeout(() => setExpirySheetVisible(true), 5000);
+        return () => clearTimeout(t);
+    }, []);
+
+
     const handleExtend = async (minutes: ExtendMinutes) => {
         const newLock = await extend(minutes);
         if (newLock) setLockExpiresAt(newLock.expiresAt);
     };
 
-    const isWarning = secondsLeft > 0 && secondsLeft < 180; // < 3 minutes
     const ArrowBack = icons.arrowBack;
 
     const handleBack = useCallback(async () => {
@@ -203,38 +217,6 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId, expiresAt 
                 </View>
             </View>
 
-            {/* Lock countdown timer */}
-            {lockExpiresAt && (
-                <View
-                    style={{ backgroundColor: isWarning ? colors.status.warningBg : colors.brand.primarySoft }}
-                    className="flex-row items-center justify-between px-5 py-2"
-                >
-                    <Text
-                        style={{ color: isWarning ? colors.status.warning : colors.brand.primary }}
-                        className="font-inter-medium text-[13px]"
-                    >
-                        {secondsLeft === 0 ? 'Lock expired' : `⏱  ${formatTime(secondsLeft)} remaining`}
-                    </Text>
-                    <View className="flex-row gap-2">
-                        {(['2', '5'] as ExtendMinutes[]).map((min) => (
-                            <TouchableOpacity
-                                key={min}
-                                onPress={() => handleExtend(min)}
-                                disabled={isExtending || secondsLeft === 0}
-                                style={{ borderColor: isWarning ? colors.status.warning : colors.brand.primary }}
-                                className="px-3 py-1 rounded-full border"
-                            >
-                                <Text
-                                    style={{ color: isWarning ? colors.status.warning : colors.brand.primary }}
-                                    className="font-inter-medium text-[12px]"
-                                >
-                                    +{min} min
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                </View>
-            )}
 
             {loading ? (
                 <View style={{ backgroundColor: colors.surface.main }} className="flex-1">
@@ -281,6 +263,23 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId, expiresAt 
                 />
             )}
 
+            {/* Order Info Popup */}
+            <OrderInfoPopup
+                isVisible={isInfoSheetVisible}
+                onClose={() => setInfoSheetVisible(false)}
+                topOffset={headerHeight}
+                order={order}
+            />
+
+            {/* Session Expiry Warning Sheet */}
+            <SessionExpirySheet
+                isVisible={isExpirySheetVisible}
+                onClose={() => setExpirySheetVisible(false)}
+                onExtend={handleExtend}
+                secondsLeft={secondsLeft}
+                isExtending={isExtending}
+            />
+
             {/* Finalize Confirmation Sheet */}
             <ConfirmMoveBottomSheet
                 isVisible={isConfirmSheetVisible}
@@ -321,13 +320,6 @@ const OrderPickingView: React.FC<OrderPickingViewProps> = ({ orderId, expiresAt 
                 onSave={handleBatchSave}
             />
 
-            {/* Order Info Detailed Sheet */}
-            <OrderInfoPopup
-                isVisible={isInfoSheetVisible}
-                onClose={() => setInfoSheetVisible(false)}
-                topOffset={headerHeight}
-                order={order}
-            />
         </View>
     );
 };

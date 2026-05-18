@@ -1,22 +1,18 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, FlatList, TextInput, TouchableOpacity, RefreshControl } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, FlatList, RefreshControl } from 'react-native';
 import OrderCard from './OrderCard';
 import PartialOrderCard from './PartialOrderCard';
 import CompletedOrderCard from './CompletedOrderCard';
 import { Order } from '@/src/types/order.types';
-import { icons } from '@/src/constants/icons';
 
 interface TabProps {
     orders: Order[];
     onRefresh?: () => void;
     refreshing?: boolean;
+    searchQuery?: string;
 }
 
-export const NewOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refreshing }) => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const Search = icons.search;
-    const SwapVert = icons.swapVert;
-
+export const NewOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refreshing, searchQuery = '' }) => {
     const filteredOrders = useMemo(() => {
         return orders?.filter(order =>
             order.orderId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -25,25 +21,7 @@ export const NewOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refreshing
     }, [orders, searchQuery]);
 
     return (
-        <View className="flex-1">
-            {/* Search and Sort Bar */}
-            <View className="px-5 mb-6 flex-row items-center">
-                <View className="flex-1 flex-row items-center bg-[#F0F0F0] rounded-xl px-4 py-2">
-                    <Search width={18} height={18} stroke="#969696" />
-                    <TextInput
-                        placeholder="Search order ID"
-                        placeholderTextColor="#969696"
-                        className="flex-1 ml-3 text-[#969696] font-inter-medium"
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
-                    />
-                </View>
-                <TouchableOpacity className="ml-4 p-2">
-                    <SwapVert width={24} height={24} fill="#6A6A6A" />
-                </TouchableOpacity>
-            </View>
-
-            {/* List */}
+        <View style={{ flex: 1 }}>
             <FlatList
                 data={filteredOrders}
                 keyExtractor={(item) => item.id}
@@ -51,15 +29,13 @@ export const NewOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refreshing
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
                 ListEmptyComponent={() => (
-                    <View className="py-20 items-center">
-                        <Text className="text-black/30 font-inter-medium">
+                    <View style={{ paddingVertical: 80, alignItems: 'center' }}>
+                        <Text style={{ color: 'rgba(0,0,0,0.3)', fontFamily: 'Inter-Medium' }}>
                             {searchQuery ? 'No orders match your search' : 'No new orders'}
                         </Text>
                     </View>
                 )}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} />
-                }
+                refreshControl={<RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} />}
                 removeClippedSubviews={true}
                 initialNumToRender={5}
                 maxToRenderPerBatch={10}
@@ -69,11 +45,7 @@ export const NewOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refreshing
     );
 };
 
-export const PartialOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refreshing }) => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const Search = icons.search;
-    const SwapVert = icons.swapVert;
-
+export const PartialOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refreshing, searchQuery = '' }) => {
     const filteredOrders = useMemo(() => {
         return orders?.filter(order =>
             order.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -83,25 +55,7 @@ export const PartialOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refres
     }, [orders, searchQuery]);
 
     return (
-        <View className="flex-1">
-            {/* Search and Sort Bar */}
-            <View className="px-5 mb-6 flex-row items-center">
-                <View className="flex-1 flex-row items-center bg-[#F0F0F0] rounded-xl px-4 py-2">
-                    <Search width={18} height={18} stroke="#969696" />
-                    <TextInput
-                        placeholder="Search order ID"
-                        placeholderTextColor="#969696"
-                        className="flex-1 ml-3 text-[#969696] font-inter-medium"
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
-                    />
-                </View>
-                <TouchableOpacity className="ml-4 p-2">
-                    <SwapVert width={24} height={24} fill="#6A6A6A" />
-                </TouchableOpacity>
-            </View>
-
-            {/* List */}
+        <View style={{ flex: 1 }}>
             <FlatList
                 data={filteredOrders}
                 keyExtractor={(item) => item.id}
@@ -109,15 +63,13 @@ export const PartialOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refres
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
                 ListEmptyComponent={() => (
-                    <View className="py-20 items-center">
-                        <Text className="text-black/30 font-inter-medium">
+                    <View style={{ paddingVertical: 80, alignItems: 'center' }}>
+                        <Text style={{ color: 'rgba(0,0,0,0.3)', fontFamily: 'Inter-Medium' }}>
                             {searchQuery ? 'No orders match your search' : 'No partial orders'}
                         </Text>
                     </View>
                 )}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} />
-                }
+                refreshControl={<RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} />}
                 removeClippedSubviews={true}
                 initialNumToRender={5}
                 maxToRenderPerBatch={10}
@@ -127,11 +79,7 @@ export const PartialOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refres
     );
 };
 
-export const CompletedOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refreshing }) => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const Search = icons.search;
-    const SwapVert = icons.swapVert;
-
+export const CompletedOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refreshing, searchQuery = '' }) => {
     const filteredOrders = useMemo(() => {
         return orders?.filter(order =>
             order.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -140,25 +88,7 @@ export const CompletedOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refr
     }, [orders, searchQuery]);
 
     return (
-        <View className="flex-1">
-            {/* Search and Sort Bar */}
-            <View className="px-5 mb-6 flex-row items-center">
-                <View className="flex-1 flex-row items-center bg-[#F0F0F0] rounded-xl px-4 py-2">
-                    <Search width={18} height={18} stroke="#969696" />
-                    <TextInput
-                        placeholder="Search order ID"
-                        placeholderTextColor="#969696"
-                        className="flex-1 ml-3 text-[#969696] font-inter-medium"
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
-                    />
-                </View>
-                <TouchableOpacity className="ml-4 p-2">
-                    <SwapVert width={24} height={24} fill="#6A6A6A" />
-                </TouchableOpacity>
-            </View>
-
-            {/* List */}
+        <View style={{ flex: 1 }}>
             <FlatList
                 data={filteredOrders}
                 keyExtractor={(item) => item.id}
@@ -166,13 +96,11 @@ export const CompletedOrdersTab: React.FC<TabProps> = ({ orders, onRefresh, refr
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
                 ListEmptyComponent={() => (
-                    <View className="py-20 items-center">
-                        <Text className="text-black/30 font-inter-medium">No completed orders found</Text>
+                    <View style={{ paddingVertical: 80, alignItems: 'center' }}>
+                        <Text style={{ color: 'rgba(0,0,0,0.3)', fontFamily: 'Inter-Medium' }}>No completed orders found</Text>
                     </View>
                 )}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} />
-                }
+                refreshControl={<RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} />}
                 removeClippedSubviews={true}
                 initialNumToRender={5}
                 maxToRenderPerBatch={10}

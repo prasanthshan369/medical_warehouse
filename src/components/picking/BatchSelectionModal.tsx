@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, Pressable, StyleSheet, ScrollView, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/src/theme/colors';
 import { OrderItem, BatchRow } from '@/src/types/order.types';
@@ -93,14 +93,16 @@ const BatchSelectionModal: React.FC<BatchSelectionModalProps> = ({
                                 </TouchableOpacity>
 
                                 {/* Quantity Box */}
-                                <View
-                                    style={{ borderColor: colors.text.DEFAULT }}
-                                    className="w-[68px] h-[54px] border-[1.5px] rounded-[12px] items-center justify-center"
-                                >
-                                    <Text style={{ color: colors.text.DEFAULT }} className="text-[24px] font-inter-bold">
-                                        {batch.quantity || '0'}
-                                    </Text>
-                                </View>
+                                <TextInput
+                                    style={{ borderColor: colors.text.DEFAULT, color: colors.text.DEFAULT }}
+                                    className="w-[68px] h-[54px] border-[1.5px] rounded-[12px] text-[24px] font-inter-bold text-center"
+                                    value={batch.quantity}
+                                    onChangeText={(val) => updateBatch(batch.id, 'quantity', val.replace(/[^0-9]/g, ''))}
+                                    keyboardType="numeric"
+                                    maxLength={4}
+                                    placeholder="0"
+                                    placeholderTextColor="#BBBBBB"
+                                />
                             </View>
                         ))}
                     </ScrollView>

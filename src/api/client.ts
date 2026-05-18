@@ -2,6 +2,9 @@ import { tokenStorage } from '@/src/lib/storage';
 import { API_BASE_URL, API_ENDPOINTS, API_TIMEOUT } from '@/src/utils/urls';
 import axios, { AxiosInstance } from 'axios';
 import { toAppError } from '@/src/api/errors';
+import { requestQueue } from '@/src/utils/requestQueue';
+
+const MUTATION_METHODS = new Set(['post', 'put', 'patch', 'delete']);
 
 // In-memory token — mirrors window.__ACCESS_TOKEN__ from web client
 // Synchronous access avoids async race conditions in the request interceptor
@@ -45,15 +48,26 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// 401 response interceptor — refresh and retry
+// Response interceptor — offline queue + 401 refresh
 apiClient.interceptors.response.use(
   (res) => res,
   async (err) => {
     const original = err.config;
 
+    // ── Offline: queue mutations for replay when connection returns ──────────
+    const isNetworkError = !err.response && err.code !== 'ECONNABORTED';
+    const isMutation = MUTATION_METHODS.has(original?.method?.toLowerCase() ?? '');
     const isAuthPath =
       original?.url?.includes('auth/refresh') ||
       original?.url?.includes('auth/logout');
+
+    if (isNetworkError && isMutation && !isAuthPath && !original?._queued) {
+      return new Promise((resolve, reject) => {
+        requestQueue.add({ ...original, _queued: true }, resolve, reject);
+      });
+    }
+
+    // ── 401: refresh token and retry ─────────────────────────────────────────
 
     if (err.response?.status === 401 && !original?._retry && !isAuthPath) {
       console.log('[apiClient] 401 detected. Attempting background refresh...');

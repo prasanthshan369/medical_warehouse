@@ -46,15 +46,12 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({ item, batches, onToggleSt
                 backgroundColor: cardBg,
                 borderWidth: 0.5,
                 borderColor: cardBorder,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.04,
-                shadowRadius: 10,
-                elevation: 1,
+                shadowColor: 'transparent',
+                elevation: 0,
                 zIndex: showOptions ? 100 : 1,
             }}
         >
-            <View className="flex-row items-start">
+            <View className="flex-row items-center">
                 {/* Left Column: Image */}
                 <View
                     style={{ backgroundColor: '#F0F0F0' }}
@@ -102,9 +99,16 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({ item, batches, onToggleSt
                                 </TouchableOpacity>
                             )}
 
+                            {/* Pencil — re-edit partial qty */}
+                            {isPartial && (
+                                <TouchableOpacity onPress={() => onPartialPress?.(item)} className="p-1 ml-2">
+                                    <icons.edit width={18} height={18} fill={colors.status.warning} />
+                                </TouchableOpacity>
+                            )}
+
                             {/* Pencil — re-edit batch */}
                             {isBatched && (
-                                <TouchableOpacity onPress={() => onBatchPress?.(item)} className="p-1 ml-1">
+                                <TouchableOpacity onPress={() => onBatchPress?.(item)} className="p-1 ml-2">
                                     <icons.edit width={18} height={18} fill={colors.brand.primary} />
                                 </TouchableOpacity>
                             )}
@@ -154,17 +158,17 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({ item, batches, onToggleSt
 
                             {/* Totals footer */}
                             <View className="flex-row items-center mt-3 pt-3" style={{ borderTopWidth: 1, borderTopColor: colors.border.success }}>
-                                <Text style={{ color: colors.brand.primary }} className="text-[22px] font-inter-bold">
+                                <Text style={{ color: colors.brand.primary }} className="text-[30px] font-inter-bold">
                                     {item.requiredQty}
                                 </Text>
-                                <Text style={{ color: colors.text.DEFAULT }} className="text-[13px] font-inter-medium ml-1">
+                                <Text style={{ color: colors.text.DEFAULT }} className="text-[15px] font-inter-medium ml-1.5">
                                     Ordered Units
                                 </Text>
-                                <View style={{ width: 1, height: 18, backgroundColor: colors.border.DEFAULT, marginHorizontal: 12 }} />
-                                <Text style={{ color: colors.brand.primary }} className="text-[22px] font-inter-bold">
+                                <View style={{ width: 0.8, height: 18, backgroundColor: colors.border.DEFAULT, opacity: 0.35, marginHorizontal: 12 }} />
+                                <Text style={{ color: colors.brand.primary }} className="text-[30px] font-inter-bold">
                                     {totalBatchQty}
                                 </Text>
-                                <Text style={{ color: colors.text.DEFAULT }} className="text-[13px] font-inter-medium ml-1">
+                                <Text style={{ color: colors.text.DEFAULT }} className="text-[15px] font-inter-medium ml-1.5">
                                     Total taken
                                 </Text>
                             </View>

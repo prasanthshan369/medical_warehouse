@@ -7,6 +7,7 @@ import arrowForward from '@/assets/icons/arrow_forward.svg';
 import keyboardDoubleArrowRight from '@/assets/icons/keyboard_double_arrow_right.svg';
 import hourglassTop from '@/assets/icons/hourglass_top.svg';
 import search from '@/assets/icons/search.svg';
+import search_dark from '@/assets/icons/search_dark.svg';
 import swapVert from '@/assets/icons/swap_vert.svg';
 import person from '@/assets/icons/person.svg';
 import creditCardClock from '@/assets/icons/credit_card_clock.svg';
@@ -45,6 +46,7 @@ export const icons = {
     keyboardDoubleArrowRight,
     hourglassTop,
     search,
+    search_dark,
     swapVert,
     person,
     creditCardClock,

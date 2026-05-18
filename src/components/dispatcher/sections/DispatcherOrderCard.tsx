@@ -15,13 +15,6 @@ const DispatcherOrderCard: React.FC<DispatcherOrderCardProps> = ({
             onPress={onPress}
             activeOpacity={0.7}
             className="bg-white rounded-[16px] p-5 mb-4"
-            style={{
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.04,
-                shadowRadius: 6,
-                elevation: 1,
-            }}
         >
             <Text className="text-[18px] font-inter-bold text-[#1A1A1A] mb-4">
                 {idDisplay || id}
